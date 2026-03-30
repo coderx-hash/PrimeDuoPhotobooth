@@ -8,163 +8,132 @@
     <style>
         /* RESET & GLOBALS */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        
+        /* EDGY DARK STREETWEAR BACKGROUND ANIMATION */
         body { 
             background: #050505; 
             color: #fff; 
-            overflow: hidden; /* No scrolling */
+            overflow: hidden; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             height: 100vh;
         }
 
+        /* Abstract Dark Gradient Background */
+        .bg-animation {
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, #050505, #111116, #1a0a10, #0a0a0a);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            z-index: -2;
+        }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* Subtle Grid Overlay */
+        .grid-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
         /* SCREEN MANAGER */
         .screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
             transition: opacity 0.5s ease-in-out, transform 0.5s ease;
             transform: scale(0.98);
         }
-        .screen.active {
-            opacity: 1;
-            pointer-events: auto;
-            transform: scale(1);
-            z-index: 10;
-        }
+        .screen.active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 10; }
 
-        /* 1. INTRO SCREEN */
-        #introScreen {
-            background: radial-gradient(circle at center, #1a1a24 0%, #050505 100%);
-        }
+        /* INTRO SCREEN */
         .brand-title {
-            font-size: 5rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            text-align: center;
-            line-height: 1.1;
-            margin-bottom: 2rem;
-            background: linear-gradient(to right, #ffffff, #888888);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: pulseGlow 3s infinite alternate;
+            font-size: 6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;
+            text-align: center; line-height: 1; margin-bottom: 2rem;
+            color: #fff; text-shadow: 4px 4px 0px #ff003c, -4px -4px 0px #00e1ff; /* Glitch aesthetic */
         }
-        .brand-title span { display: block; font-size: 2.5rem; font-weight: 300; letter-spacing: 15px; color: #fff; -webkit-text-fill-color: #fff; margin-top: -10px;}
-        @keyframes pulseGlow {
-            0% { text-shadow: 0 0 20px rgba(255,255,255,0.1); }
-            100% { text-shadow: 0 0 40px rgba(255,255,255,0.4), 0 0 10px rgba(255,255,255,0.2); }
+        .brand-title span { display: block; font-size: 2rem; font-weight: 500; letter-spacing: 15px; color: #aaa; text-shadow: none; margin-top: 10px;}
+        
+        .action-btn {
+            background: #fff; color: #000; padding: 20px 50px; border-radius: 0; /* Sharp edges */
+            font-size: 1.2rem; font-weight: 900; cursor: pointer; border: none; text-transform: uppercase;
+            letter-spacing: 3px; transition: 0.3s;
+            box-shadow: 6px 6px 0px rgba(255,255,255,0.2);
         }
-        .start-btn {
-            background: #ffffff;
-            color: #000;
-            padding: 20px 50px;
-            border-radius: 50px;
-            font-size: 1.5rem;
-            font-weight: 800;
-            cursor: pointer;
-            border: none;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: 0.3s;
-            box-shadow: 0 10px 30px rgba(255,255,255,0.2);
-        }
-        .start-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(255,255,255,0.4); }
+        .action-btn:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0px rgba(255,255,255,0.4); }
+        .action-btn.secondary { background: transparent; color: #fff; border: 2px solid #fff; box-shadow: none; }
+        .action-btn.secondary:hover { background: rgba(255,255,255,0.1); }
 
-        /* 2. SETUP SCREEN (Border Selection) */
-        #setupScreen h2 { font-size: 3rem; font-weight: 800; margin-bottom: 3rem; text-transform: uppercase; }
-        .setup-options { display: flex; gap: 30px; }
-        .choice-card {
-            background: #111;
-            border: 2px solid #333;
-            padding: 40px;
-            border-radius: 20px;
-            cursor: pointer;
-            text-align: center;
-            width: 300px;
-            transition: 0.3s;
-        }
-        .choice-card:hover { border-color: #fff; background: #1a1a1a; transform: translateY(-5px); }
-        .choice-card h3 { font-size: 1.8rem; margin-bottom: 10px; }
-        .choice-card p { color: #888; font-size: 0.9rem; }
-        input[type="file"] { display: none; }
-        #proceedBtn { margin-top: 40px; display: none; } /* Hidden until choice is made */
-
-        /* 3. BOOTH SCREEN (Live Camera) */
-        .booth-container {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-            width: 100%;
-            max-width: 1400px;
-            padding: 20px;
-        }
+        /* BOOTH SCREEN */
+        .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1400px; padding: 20px; }
         .camera-wrapper {
-            position: relative;
-            height: 85vh;
-            aspect-ratio: 9 / 16;
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            border: 2px solid #333;
+            position: relative; height: 85vh; aspect-ratio: 9 / 16;
+            background: #000; overflow: hidden;
+            border: 4px solid #fff; box-shadow: 10px 10px 0px rgba(255, 255, 255, 0.1);
         }
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .frame-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background-size: 100% 100%; }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: transform 0.3s; }
+        /* Toggled class for back camera so it doesn't mirror */
+        video.no-mirror { transform: scaleX(1); } 
+
+        .frame-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background-size: 100% 100%; z-index: 10;}
         .countdown-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 15rem; font-weight: 900; color: white; text-shadow: 0 10px 40px rgba(0,0,0,0.9); display: none; z-index: 15; }
         .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; opacity: 0; z-index: 20; pointer-events: none; }
-        .flash.active { animation: flashAnim 0.8s cubic-bezier(0.25, 1, 0.5, 1); }
+        .flash.active { animation: flashAnim 0.8s ease-out; }
         @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
-        
-        .booth-controls { display: flex; flex-direction: column; gap: 20px; max-width: 350px; }
-        .status-text { color: #00ff00; font-weight: 600; letter-spacing: 1px; font-size: 0.9rem;}
 
-        /* 4. RESULT SCREEN */
-        #resultScreen { text-align: center; }
-        .success-icon { font-size: 5rem; margin-bottom: 20px; }
-        #resultScreen h2 { font-size: 4rem; font-weight: 900; margin-bottom: 10px; }
-        #resultScreen p { font-size: 1.2rem; color: #aaa; margin-bottom: 40px; }
+        .booth-controls { display: flex; flex-direction: column; gap: 15px; max-width: 350px; }
+        .status-text { color: #00ff00; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px;}
+
+        /* PREVIEW SCREEN */
+        .preview-wrapper {
+            height: 70vh; aspect-ratio: 9 / 16;
+            border: 4px solid #fff; margin-bottom: 30px;
+            box-shadow: 10px 10px 0px rgba(255, 255, 255, 0.1);
+        }
+        #previewImage { width: 100%; height: 100%; object-fit: cover; }
+        .preview-controls { display: flex; gap: 20px; }
+
+        /* RESULT SCREEN */
+        .success-icon { font-size: 5rem; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
         
-        /* HIDDEN CANVAS */
         #canvas { display: none; }
     </style>
 </head>
 <body>
 
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+
     <div id="introScreen" class="screen active">
-        <h1 class="brand-title">PRIME DUO<span>PHOTOBOOTH</span></h1>
-        <button class="start-btn" onclick="initCameraAndProceed()">Tap to Start</button>
+        <h1 class="brand-title">PRIME DUO<span>STUDIO</span></h1>
+        <button class="action-btn" onclick="initCameraAndProceed()">Tap to Enter</button>
     </div>
 
     <div id="setupScreen" class="screen">
-        <h2>Choose Your Style</h2>
-        <div class="setup-options">
-            <div class="choice-card" onclick="selectBorder('none')">
-                <h3>No Border</h3>
-                <p>Clean, full-resolution portrait.</p>
-            </div>
-            
-            <label for="frameUpload" class="choice-card">
-                <h3>Upload Border</h3>
-                <p>Add your custom PNG frame.</p>
+        <h2 style="font-size: 3rem; font-weight: 900; margin-bottom: 2rem;">SELECT BORDER</h2>
+        <div style="display: flex; gap: 20px; margin-bottom: 40px;">
+            <button class="action-btn secondary" onclick="selectBorder('none')">No Border</button>
+            <label class="action-btn secondary" style="cursor: pointer;">
+                Upload PNG
+                <input type="file" id="frameUpload" accept="image/png">
             </label>
-            <input type="file" id="frameUpload" accept="image/png">
         </div>
-        <button id="proceedBtn" class="start-btn" onclick="goToBooth()">Proceed to Camera ➔</button>
+        <button id="proceedBtn" class="action-btn" style="display: none;" onclick="goToBooth()">Initialize Camera</button>
     </div>
 
     <div id="boothScreen" class="screen">
         <div class="booth-container">
             <div class="booth-controls">
-                <h1 style="font-size: 2.5rem; font-weight: 900; line-height: 1;">PRIME DUO</h1>
+                <h1 style="font-size: 3rem; font-weight: 900; line-height: 1;">PRIME</h1>
                 <p class="status-text" id="cameraStatus">Initializing...</p>
-                <p style="color: #888; margin-bottom: 20px; font-size: 0.9rem;">Look at the camera and pose when the timer hits zero.</p>
-                <button id="captureBtn" class="start-btn" style="width: 100%; padding: 25px;">📷 Start Timer</button>
+                <p style="color: #aaa; margin-bottom: 20px;">Strike a pose. Flash activates at zero.</p>
+                
+                <button id="captureBtn" class="action-btn" style="width: 100%;">📷 Capture</button>
+                <button id="flipCamBtn" class="action-btn secondary" style="display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
             </div>
 
             <div class="camera-wrapper">
@@ -176,80 +145,59 @@
         </div>
     </div>
 
+    <div id="previewScreen" class="screen">
+        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 20px;">REVIEW SHOT</h2>
+        <div class="preview-wrapper">
+            <img id="previewImage" src="" alt="Captured Photo">
+        </div>
+        <div class="preview-controls">
+            <button class="action-btn secondary" onclick="retakePhoto()">Retake</button>
+            <button class="action-btn" onclick="savePhoto()">Save & Continue</button>
+        </div>
+    </div>
+
     <div id="resultScreen" class="screen">
-        <div class="success-icon">✨📸✨</div>
-        <h2>Photo Saved!</h2>
-        <p>Check your computer's download folder for the high-res copy.</p>
-        <button class="start-btn" onclick="startNewSession()">🔄 New Session</button>
+        <div class="success-icon">✦</div>
+        <h2 style="font-size: 3rem; font-weight: 900; margin-bottom: 10px;">CAPTURED.</h2>
+        <p style="color: #aaa; margin-bottom: 40px; font-size: 1.2rem;">Image saved to your local drive.</p>
+        <button class="action-btn" onclick="startNewSession()">New Session</button>
     </div>
 
     <canvas id="canvas"></canvas>
 
     <script>
-        // DOM Elements
         const video = document.getElementById('video');
         const frameOverlay = document.getElementById('frameOverlay');
         const frameUpload = document.getElementById('frameUpload');
         const captureBtn = document.getElementById('captureBtn');
+        const flipCamBtn = document.getElementById('flipCamBtn');
         const countdownEl = document.getElementById('countdown');
         const flashEffect = document.getElementById('flashEffect');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const cameraStatus = document.getElementById('cameraStatus');
         const proceedBtn = document.getElementById('proceedBtn');
+        const previewImage = document.getElementById('previewImage');
 
         let uploadedFrameData = null; 
         let isNikonConnected = false;
+        let mobileFacingMode = 'environment'; // Default to BACK camera for mobile
+        let currentStream = null;
+        let finalDataURL = null; // Store captured image before saving
 
-        // --- NAVIGATION LOGIC ---
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
 
-        // --- STEP 1: INITIALIZE CAMERA (Triggers on "Tap to Start") ---
         async function initCameraAndProceed() {
-            try {
-                const streamConfig = await navigator.mediaDevices.getUserMedia({ video: true });
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                
-                let selectedDeviceId = null;
-                for (let device of videoDevices) {
-                    const label = device.label.toLowerCase();
-                    if (label.includes('usb video') || label.includes('nikon') || label.includes('capture')) {
-                        selectedDeviceId = device.deviceId;
-                        isNikonConnected = true;
-                        break;
-                    }
-                }
-
-                let constraints = isNikonConnected 
-                    ? { video: { deviceId: { exact: selectedDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } }
-                    : { video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 } } };
-
-                cameraStatus.innerText = isNikonConnected ? "PRO MODE: NIKON DSLR ACTIVE" : "MOBILE MODE: BUILT-IN CAM ACTIVE";
-                cameraStatus.style.color = isNikonConnected ? "#00ff00" : "#ffaa00";
-
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
-
-                // Move to Setup Screen
-                showScreen('setupScreen');
-
-            } catch (err) {
-                alert("Camera access required to use the photobooth.");
-            }
+            showScreen('setupScreen');
         }
 
-        // --- STEP 2: SETUP BORDER ---
         function selectBorder(type) {
-            if (type === 'none') {
-                uploadedFrameData = null;
-                frameOverlay.style.backgroundImage = 'none';
-                document.querySelectorAll('.choice-card').forEach(c => c.style.borderColor = '#333');
-                proceedBtn.style.display = 'block';
-            }
+            uploadedFrameData = null;
+            frameOverlay.style.backgroundImage = 'none';
+            proceedBtn.style.display = 'block';
         }
 
         frameUpload.addEventListener('change', function(e) {
@@ -259,18 +207,73 @@
                 reader.onload = function(event) {
                     uploadedFrameData = event.target.result;
                     frameOverlay.style.backgroundImage = `url('${uploadedFrameData}')`;
-                    proceedBtn.style.display = 'block'; // Show proceed button
+                    proceedBtn.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
             }
-            e.target.value = ''; 
         });
 
-        function goToBooth() {
+        async function goToBooth() {
             showScreen('boothScreen');
+            await startCameraStream();
         }
 
-        // --- STEP 3: TIMER & CAPTURE ---
+        async function startCameraStream() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            try {
+                const streamConfig = await navigator.mediaDevices.getUserMedia({ video: true });
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                let selectedDeviceId = null;
+                isNikonConnected = false;
+
+                for (let device of videoDevices) {
+                    const label = device.label.toLowerCase();
+                    if (label.includes('usb') || label.includes('nikon') || label.includes('capture')) {
+                        selectedDeviceId = device.deviceId;
+                        isNikonConnected = true;
+                        break;
+                    }
+                }
+
+                let constraints = {};
+                if (isNikonConnected) {
+                    cameraStatus.innerText = "PRO MODE: NIKON DSLR";
+                    cameraStatus.style.color = "#00ff00";
+                    flipCamBtn.style.display = 'none'; // No flip button for DSLR
+                    video.classList.remove('no-mirror'); // Mirror DSLR
+                    constraints = { video: { deviceId: { exact: selectedDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
+                } else {
+                    cameraStatus.innerText = `MOBILE MODE: ${mobileFacingMode === 'user' ? 'FRONT' : 'BACK'} CAM`;
+                    cameraStatus.style.color = "#ffaa00";
+                    flipCamBtn.style.display = 'block'; // Show flip button for mobile
+                    
+                    // Do not mirror the back camera
+                    if (mobileFacingMode === 'environment') {
+                        video.classList.add('no-mirror');
+                    } else {
+                        video.classList.remove('no-mirror');
+                    }
+                    constraints = { video: { facingMode: mobileFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } } };
+                }
+
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
+
+            } catch (err) {
+                alert("Please allow camera access.");
+            }
+        }
+
+        function flipCamera() {
+            mobileFacingMode = mobileFacingMode === 'user' ? 'environment' : 'user';
+            startCameraStream();
+        }
+
         captureBtn.addEventListener('click', () => {
             captureBtn.disabled = true;
             let timeLeft = 5;
@@ -296,29 +299,47 @@
             try {
                 const response = await fetch('http://localhost:3000/trigger-camera');
                 const data = await response.json();
-                if (data.success) playFlashAndSave(500);
-                else playFlashAndSave(0);
+                if (data.success) playFlashAndProcess(500);
+                else playFlashAndProcess(0);
             } catch (error) {
-                playFlashAndSave(0);
+                playFlashAndProcess(0);
             }
         }
 
-        function triggerMobileCapture() {
-            playFlashAndSave(0);
+        async function triggerMobileCapture() {
+            // Attempt to turn on mobile flashlight (torch) via web API
+            let track = null;
+            if (currentStream) {
+                track = currentStream.getVideoTracks()[0];
+                try {
+                    const capabilities = track.getCapabilities();
+                    if (capabilities.torch) {
+                        await track.applyConstraints({ advanced: [{ torch: true }] });
+                    }
+                } catch (e) { console.log("Torch API not supported on this browser/device."); }
+            }
+
+            playFlashAndProcess(500);
+
+            // Turn off flashlight after capture
+            setTimeout(async () => {
+                if (track) {
+                    try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e){}
+                }
+            }, 1500);
         }
 
-        function playFlashAndSave(delay) {
+        function playFlashAndProcess(delay) {
             flashEffect.classList.remove('active');
             void flashEffect.offsetWidth; 
             flashEffect.classList.add('active');
 
             setTimeout(() => {
-                processAndSaveImage();
+                generateImagePreview();
             }, delay);
         }
 
-        // --- STEP 4: PROCESS, SAVE, AND RESULT SCREEN ---
-        function processAndSaveImage() {
+        function generateImagePreview() {
             const targetRatio = 9 / 16;
             let srcWidth = video.videoWidth;
             let srcHeight = video.videoHeight;
@@ -328,46 +349,57 @@
             canvas.width = drawWidth;
             canvas.height = srcHeight;
 
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
+            // Mirror logic: Mirror only if using front camera or DSLR
+            if (isNikonConnected || mobileFacingMode === 'user') {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+            
             ctx.drawImage(video, startX, 0, drawWidth, srcHeight, 0, 0, canvas.width, canvas.height);
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
+            
+            // Reset context before drawing frame
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
 
             if (uploadedFrameData) {
                 const img = new Image();
                 img.onload = () => {
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    executeDownload();
+                    showPreview();
                 };
                 img.src = uploadedFrameData;
             } else {
-                executeDownload();
+                showPreview();
             }
         }
 
-        function executeDownload() {
-            const dataURL = canvas.toDataURL('image/jpeg', 1.0);
+        function showPreview() {
+            finalDataURL = canvas.toDataURL('image/jpeg', 1.0);
+            previewImage.src = finalDataURL;
+            showScreen('previewScreen');
+            captureBtn.disabled = false; // Reset btn for next time
+        }
+
+        function retakePhoto() {
+            finalDataURL = null;
+            showScreen('boothScreen');
+        }
+
+        function savePhoto() {
             const link = document.createElement('a');
             link.download = `PrimeDuo_${new Date().getTime()}.jpg`;
-            link.href = dataURL;
+            link.href = finalDataURL;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            // Move to Final Result Screen
             showScreen('resultScreen');
-            captureBtn.disabled = false;
         }
 
-        // --- STEP 5: NEW SESSION ---
         function startNewSession() {
-            // Reset configurations
             uploadedFrameData = null;
             frameOverlay.style.backgroundImage = 'none';
             proceedBtn.style.display = 'none';
-            
-            // Go back to Setup Screen (or IntroScreen kung gusto mong pinaka-umpisa)
+            finalDataURL = null;
             showScreen('setupScreen');
         }
 
