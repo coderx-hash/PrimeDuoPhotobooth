@@ -783,7 +783,7 @@
         }
 
         // -----------------------------------------
-        // CAPTURE & CANVA PROCESSING
+        // CAPTURE & CANVA PROCESSING (UPDATED WITH PRE-TRIGGER)
         // -----------------------------------------
         captureBtn.addEventListener('click', () => {
             captureBtn.disabled = true;
@@ -791,25 +791,42 @@
             countdownEl.style.display = 'block';
             countdownEl.innerText = timeLeft;
 
+            let isPreTriggered = false; // Taga-check kung na-trigger na ba ang Node.js
+
             const timerInterval = setInterval(() => {
                 timeLeft--;
-                if (timeLeft > 0) countdownEl.innerText = timeLeft;
-                else {
+
+                // PRE-TRIGGER LOGIC: Pumuputok 1 segundo bago mag zero para sumabay ang flash!
+                if (timeLeft === 1 && isNikonConnected && !isPreTriggered) {
+                    isPreTriggered = true;
+                    triggerNodeJSCamera(); 
+                }
+
+                if (timeLeft > 0) {
+                    countdownEl.innerText = timeLeft;
+                } else {
+                    // PAGDATING SA ZERO
                     clearInterval(timerInterval);
                     countdownEl.style.display = 'none';
-                    if (isNikonConnected) triggerNodeJSCamera();
-                    else triggerMobileCapture();
+
+                    if (isNikonConnected) {
+                        // Mag s-screen flash na lang dito kasi yung DSLR pumitik na kanina (pre-trigger)
+                        playFlashAndProcess(0); 
+                    } else {
+                        // Para sa Mobile, walang mechanical delay kaya sakto lang tawagin sa zero.
+                        triggerMobileCapture();
+                    }
                 }
             }, 1000);
         });
 
         async function triggerNodeJSCamera() {
             try {
-                const response = await fetch('http://localhost:3000/trigger-camera');
-                const data = await response.json();
-                if (data.success) playFlashAndProcess(500);
-                else playFlashAndProcess(0);
-            } catch (error) { playFlashAndProcess(0); }
+                // Utusan na lang agad ang Node.js na pumitik, hindi na kailangan mag process image dito.
+                await fetch('http://localhost:3000/trigger-camera');
+            } catch (error) { 
+                console.error("Camera trigger error. Server running?", error);
+            }
         }
 
         async function triggerMobileCapture() {
