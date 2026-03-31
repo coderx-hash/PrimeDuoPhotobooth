@@ -14,13 +14,13 @@
 
     <style>
         /* -----------------------------------------
-           CSS VARIABLES FOR THEMING & RATIO
+           CSS VARIABLES FOR THEMING (PREMIUM)
         ------------------------------------------ */
         :root {
             --cam-ratio: 3 / 4; 
             /* DEFAULT THEME */
             --primary-color: #ffa500; 
-            --primary-glow: rgba(255, 165, 0, 0.4);
+            --primary-glow: rgba(255, 165, 0, 0.5);
             --stroke-color: #4a3500;
             --bg-overlay: #13141b; 
             --bg-image: none; 
@@ -32,24 +32,27 @@
 
         body.theme-wedding { --primary-color: #d4af37; --primary-glow: rgba(212, 175, 55, 0.4); --stroke-color: #5c4a11; --bg-overlay: rgba(255, 255, 255, 0.6); --bg-image: url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop'); --text-main: #222; --text-accent: #d4af37; --box-bg: rgba(255,255,255,0.9); --card-bg: rgba(230,230,230,0.8); }
         body.theme-rock { --primary-color: #ff003c; --primary-glow: rgba(255, 0, 60, 0.4); --stroke-color: #4a0000; --bg-overlay: rgba(15, 5, 5, 0.85); --bg-image: url('https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=2070&auto=format&fit=crop'); --text-main: #fff; --text-accent: #ff003c; --box-bg: rgba(20,0,0,0.9); --card-bg: #330000; }
-        body.theme-birthday { --primary-color: #ff00ff; --primary-glow: rgba(0, 240, 255, 0.4); --stroke-color: #004a55; --bg-overlay: rgba(15, 0, 30, 0.7); --bg-image: url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop'); --text-main: #fff; --text-accent: #ff00ff; --box-bg: rgba(15,0,30,0.9); --card-bg: #2a004d; }
+        body.theme-birthday { --primary-color: #ff00ff; --primary-glow: rgba(255, 0, 255, 0.4); --stroke-color: #4a004a; --bg-overlay: rgba(15, 0, 30, 0.7); --bg-image: url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop'); --text-main: #fff; --text-accent: #ff00ff; --box-bg: rgba(15,0,30,0.9); --card-bg: #2a004d; }
+        body.theme-fiesta { --primary-color: #ffaa00; --primary-glow: rgba(255, 170, 0, 0.4); --stroke-color: #4a3000; --bg-overlay: rgba(0, 0, 0, 0.4); --bg-image: url('https://images.unsplash.com/photo-1533174000222-92ab8d003e6f?q=80&w=2070&auto=format&fit=crop'); --text-main: #fff; --text-accent: #ffaa00; --box-bg: rgba(0, 0, 0, 0.8); --card-bg: #221100; }
+        body.theme-christening { --primary-color: #87ceeb; --primary-glow: rgba(135, 206, 235, 0.4); --stroke-color: #2b4550; --bg-overlay: rgba(255, 255, 255, 0.5); --bg-image: url('https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=2070&auto=format&fit=crop'); --text-main: #444; --text-accent: #87ceeb; --box-bg: rgba(255, 255, 255, 0.9); --card-bg: #e0f0f5; }
+        body.theme-party { --primary-color: #00ff00; --primary-glow: rgba(0, 255, 0, 0.4); --stroke-color: #003a00; --bg-overlay: rgba(10, 20, 10, 0.8); --bg-image: url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=2070&auto=format&fit=crop'); --text-main: #fff; --text-accent: #00ff00; --box-bg: rgba(5, 15, 5, 0.9); --card-bg: #0a200a; }
         body.theme-horror { --primary-color: #ff0000; --primary-glow: rgba(255, 0, 0, 0.5); --stroke-color: #330000; --bg-overlay: rgba(5, 0, 0, 0.8); --bg-image: url('https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?q=80&w=2070&auto=format&fit=crop'); --text-main: #ffcccc; --text-accent: #ff0000; --box-bg: rgba(10,0,0,0.9); --card-bg: #1a0000; }
 
         /* -----------------------------------------
            RESET & GLOBALS
         ------------------------------------------ */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        body { background: var(--bg-overlay); color: var(--text-main); overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; width: 100vw; transition: all 0.5s ease; }
+        body { background: var(--bg-overlay); color: var(--text-main); overflow: hidden; height: 100vh; width: 100vw; transition: all 0.5s ease; }
 
         /* BACKGROUND EFFECTS */
         .bg-slider { position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), var(--bg-image); background-size: cover; background-position: center; z-index: -3; transition: all 0.5s ease; }
-        .grid-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(128, 128, 128, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(128, 128, 128, 0.05) 1px, transparent 1px); background-size: 50px 50px; z-index: -2; pointer-events: none; }
+        .grid-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(128, 128, 128, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(128, 128, 128, 0.05) 1px, transparent 1px); background-size: 50px 50px; z-index: -2; pointer-events: none; }
 
         /* -----------------------------------------
            HEADER / FOOTER
         ------------------------------------------ */
-        .top-bar { position: absolute; top: 20px; left: 30px; right: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 50; font-size: 1rem; font-weight: 800; letter-spacing: 2px; color: var(--text-main); pointer-events: none; opacity: 0.5; }
-        .footer-brand { position: absolute; bottom: 20px; text-align: right; right: 30px; font-size: 0.7rem; letter-spacing: 5px; color: var(--text-main); font-weight: 800; z-index: 50; text-transform: uppercase; opacity: 0.4; }
+        .top-bar { position: fixed; top: 20px; left: 30px; right: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 50; font-size: 1rem; font-weight: 800; letter-spacing: 2px; color: var(--text-main); pointer-events: none; opacity: 0.5; }
+        .footer-brand { position: fixed; bottom: 20px; right: 30px; font-size: 0.7rem; letter-spacing: 5px; color: var(--text-main); font-weight: 800; z-index: 50; text-transform: uppercase; opacity: 0.4; }
 
         /* -----------------------------------------
            SCREENS & ANIMATIONS
@@ -63,34 +66,67 @@
         @keyframes slideDown { 0% { transform: translateY(-30px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 
         /* -----------------------------------------
-           PREMIUM SIDE BANNER (BOOKING INFO)
+           LEFT SIDEBAR (BOOKING BANNER) - CENTERED
         ------------------------------------------ */
+        #introScreen { flex-direction: row; justify-content: flex-start; }
+        .intro-content-wrapper { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding-left: 320px;}
+
         .booking-banner {
             position: absolute;
             left: -350px; 
             top: 0;
-            width: 350px;
+            width: 320px;
             height: 100vh;
-            background: linear-gradient(135deg, rgba(10,10,15,0.95), rgba(0,0,0,0.98));
-            border-right: 4px solid var(--primary-color);
-            box-shadow: 15px 0 50px rgba(0,0,0,0.8);
+            background: linear-gradient(180deg, #16171b, #0a0a0d);
+            border-right: 2px solid var(--primary-color);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.8);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            padding: 40px 30px;
+            justify-content: center; /* VERTICALLY CENTERS THE CONTENT */
+            padding: 30px 25px;
             z-index: 40;
-            animation: slideInLeft 1s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.5s;
+            overflow-y: auto;
+            animation: slideInLeftBottom 1s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.5s;
         }
-        @keyframes slideInLeft { to { left: 0; } }
-        .banner-glow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 0% 50%, var(--primary-glow) 0%, transparent 70%); pointer-events: none; opacity: 0.5; z-index: 1;}
-        .banner-content { position: relative; z-index: 2; text-align: center; }
-        .banner-content h3 { font-size: 2rem; font-weight: 900; color: #fff; text-transform: uppercase; margin-bottom: 10px; text-shadow: 0 0 15px var(--primary-color); }
-        .banner-content p { font-size: 0.95rem; color: #ccc; margin-bottom: 40px; font-weight: 500; }
+        .booking-banner::-webkit-scrollbar { width: 5px; }
+        .booking-banner::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 5px; }
         
-        .detail-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px; text-align: left; transition: 0.3s; }
-        .detail-item:hover { background: rgba(255,255,255,0.1); border-color: var(--primary-color); transform: translateX(5px); }
-        .detail-item span { color: var(--primary-color); font-size: 0.8rem; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; }
-        .detail-item div { color: #fff; font-weight: 800; font-size: 1.1rem; margin-top: 5px; word-break: break-word; }
+        @keyframes slideInLeftBottom { to { left: 0; } }
+        
+        .banner-content { 
+            position: relative; 
+            z-index: 2; 
+            display: flex; 
+            flex-direction: column; 
+            width: 100%;
+        }
+        
+        .contact-cards-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            margin-bottom: 30px; 
+        }
+        
+        .contact-card {
+            background: rgba(30, 30, 35, 0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            border-radius: 12px;
+            text-align: left;
+            transition: 0.3s;
+        }
+        .contact-card:hover { border-color: var(--primary-color); background: rgba(40, 40, 45, 0.8); }
+        .contact-card .card-label { color: var(--primary-color); font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px;}
+        .contact-card .card-val { color: #fff; font-size: 0.95rem; font-weight: 800; word-break: break-word;}
+
+        .rent-section { 
+            text-align: center; 
+            padding-top: 20px; 
+            border-top: 1px solid rgba(255,255,255,0.1); 
+        }
+        .rent-section h3 { font-size: 2rem; font-weight: 900; color: #fff; text-transform: uppercase; margin-bottom: 5px; text-shadow: 0 0 15px var(--primary-glow); line-height: 1.1;}
+        .rent-section p { font-size: 0.85rem; color: #ccc; font-weight: 500; }
 
         /* -----------------------------------------
            PREMIUM BUTTONS 
@@ -98,7 +134,7 @@
         .btn-pill {
             background-color: var(--primary-color); color: #000; font-weight: 900; font-size: 1.2rem; padding: 18px 50px; border-radius: 50px; border: 8px solid var(--stroke-color); cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s ease; box-shadow: 0 10px 30px var(--primary-glow); display: inline-flex; align-items: center; justify-content: center; gap: 10px;
         }
-        .btn-pill:hover:not(:disabled) { transform: scale(1.05); border-color: var(--primary-color); background-color: var(--text-main); }
+        .btn-pill:hover:not(:disabled) { transform: scale(1.05); border-color: var(--text-main); background-color: var(--primary-color); }
         .btn-pill:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(100%); }
         .btn-pill.pulse { animation: pulseAnim 2s infinite; }
         @keyframes pulseAnim { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
@@ -128,7 +164,7 @@
         ------------------------------------------ */
         .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1200px; padding: 20px; justify-content: center;}
         
-        .view-box { position: relative; height: 70vh; width: auto; max-width: 90vw; aspect-ratio: var(--cam-ratio); background: #000; border: 4px solid var(--primary-color); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; transition: aspect-ratio 0.3s ease; flex-shrink: 0; }
+        .view-box { position: relative; height: 65vh; width: auto; max-width: 90vw; aspect-ratio: var(--cam-ratio); background: #000; border: 4px solid var(--primary-color); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; transition: aspect-ratio 0.3s ease; flex-shrink: 0; }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         video.no-mirror { transform: scaleX(1); } 
 
@@ -149,91 +185,86 @@
 
         #previewImage { width: 100%; height: 100%; object-fit: contain; } 
 
-        .random-compliment { display: none; background: #111; color: #fff; padding: 10px 30px; border-radius: 50px; font-size: 1.5rem; font-weight: 900; border: 2px solid var(--primary-color); white-space: nowrap; animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 20; margin-bottom: 20px; text-transform: uppercase; text-align: center; }
-        @keyframes popUp { 0% { transform: scale(0); opacity: 0;} 100% { transform: scale(1); opacity: 1;} }
+        /* COMPLIMENT BADGE - MOVED ABOVE CAMERA & CENTERED AT BOTTOM */
+        .random-compliment { 
+            display: none; 
+            position: absolute; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            background: #000; 
+            color: #fff; 
+            padding: 10px 30px; 
+            border-radius: 50px; 
+            font-size: 1.5rem; 
+            font-weight: 900; 
+            border: 2px solid var(--primary-color); 
+            white-space: nowrap; 
+            animation: popUp 0.6s ease-out; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
+            z-index: 20; 
+            text-align: center; 
+        }
+        @keyframes popUp { 0% { transform: translate(-50%, 50px) scale(0.5); opacity: 0;} 100% { transform: translate(-50%, 0) scale(1); opacity: 1;} }
 
+        /* READY HYPE ANIMATION */
         .hype-text { font-size: 6rem; font-weight: 900; color: var(--primary-color); text-transform: uppercase; animation: zoomInHype 1.5s ease-in-out; text-shadow: 0 0 30px var(--primary-glow); text-align: center;}
         @keyframes zoomInHype { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
         /* -----------------------------------------
-           ADMIN PANEL (GLASSMORPHISM BOTTOM LEFT)
+           ADMIN PANEL & QR MODAL (GEAR AT BOTTOM LEFT)
         ------------------------------------------ */
         .admin-trigger { 
-            position: absolute; 
-            bottom: 25px; 
-            left: 25px; 
-            width: 50px;
-            height: 50px;
+            position: fixed; 
+            bottom: 20px; 
+            left: 20px; 
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem; 
+            font-size: 1.3rem; 
             cursor: pointer; 
             z-index: 1000;
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(5px);
             border-radius: 50%; 
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
+            color: #ccc;
             transition: all 0.3s ease;
             opacity: 0.5;
         }
         .admin-trigger:hover { 
             opacity: 1; 
-            transform: rotate(90deg) scale(1.1); 
-            background: rgba(255, 255, 255, 0.15);
+            transform: rotate(90deg); 
+            background: rgba(255, 255, 255, 0.1);
             border-color: var(--primary-color);
-            box-shadow: 0 0 15px var(--primary-glow);
+            color: #fff;
         }
 
         .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; color: #fff; padding: 40px; border-radius: 20px; border: 2px solid var(--primary-color); z-index: 1000; display: none; flex-direction: column; gap: 15px; width: 400px; max-width: 90vw;}
         .admin-group { display: flex; flex-direction: column; gap: 5px; }
         .admin-group label { font-size: 0.8rem; color: #aaa; }
-        .admin-group input, .admin-group select { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-weight: bold; outline: none;}
+        .admin-group input, .admin-group select { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-weight: bold; outline: none; appearance: none; text-align: center;}
+        .admin-group select option { background: #222; color: #fff; }
         .admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; }
-
-        /* -----------------------------------------
-           NEW BOOKING INFO (RESULT SCREEN ONLY)
-        ------------------------------------------ */
-        .result-booking {
-            background: var(--box-bg);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-left: 4px solid var(--primary-color);
-            padding: 20px 25px;
-            border-radius: 12px;
-            text-align: center;
-            margin-top: 30px;
-            max-width: 400px;
-            width: 100%;
-        }
-        .result-booking h3 { font-size: 1.2rem; color: var(--primary-color); margin-bottom: 5px; text-transform: uppercase; font-weight: 900;}
-        .result-booking p { font-size: 0.85rem; opacity: 0.8; margin-bottom: 15px; }
         
-        .contact-grid { display: flex; flex-direction: column; gap: 8px; }
-        .contact-grid .row { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; 
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .contact-grid .label { color: var(--primary-color); font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;}
-        .contact-grid .val { color: #fff; font-size: 0.85rem; font-weight: 700; }
-
         .qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 100; padding: 20px; text-align: center;}
         .qr-box { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 5px solid var(--primary-color); display: flex; align-items: center; justify-content: center; min-width: 250px; min-height: 250px;}
-        
+
         #canvas { display: none; }
 
         /* -----------------------------------------
            MOBILE RESPONSIVENESS
         ------------------------------------------ */
         @media (max-width: 900px) {
-            .booking-banner { position: relative; left: 0; width: 100%; height: auto; border-right: none; border-bottom: 4px solid var(--primary-color); padding: 20px; animation: none; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
-            .banner-content h3 { font-size: 1.5rem; }
-            .banner-content p { margin-bottom: 15px; }
-            .detail-item { padding: 10px; margin-bottom: 10px; }
+            .booking-banner { position: relative; left: 0; width: 100%; height: auto; max-height: none; border-right: none; border-bottom: 2px solid var(--primary-color); padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); order: 2;}
+            
+            #introScreen { flex-direction: column; justify-content: flex-start; overflow-y: auto;}
+            .intro-content-wrapper { padding-left: 0; padding-top: 50px; order: 1; min-height: 50vh;}
+            
             .intro-title { font-size: 3rem; margin-top: 20px;}
             .intro-title span { font-size: 1.5rem; }
-            #introScreen { flex-direction: column; justify-content: flex-start; overflow-y: auto;}
 
             .setup-header h1 { font-size: 2.5rem; }
             .setup-box { padding: 20px; }
@@ -246,7 +277,8 @@
             #previewScreen { justify-content: center; padding-top: 10px;}
             
             /* Admin icon resize for mobile */
-            .admin-trigger { width: 40px; height: 40px; font-size: 1rem; bottom: 15px; left: 15px; }
+            .admin-trigger { width: 40px; height: 40px; font-size: 1rem; bottom: 10px; left: 10px; }
+            .random-compliment { font-size: 1.2rem; padding: 6px 20px; margin-bottom: 10px;}
         }
     </style>
 </head>
@@ -291,42 +323,47 @@
     </div>
 
     <div class="footer-brand">
-        POWERED BY YUKI APPAREL PH // SYSTEM V7.3
+        POWERED BY YUKI APPAREL PH // SYSTEM V8.6 FINAL
     </div>
 
     <div id="introScreen" class="screen active">
         
         <div class="booking-banner">
-            <div class="banner-glow"></div>
             <div class="banner-content">
-                <div style="font-size: 3rem; margin-bottom: 10px;">📸</div>
-                <h3>RENT OUR BOOTH</h3>
-                <p>Make your next event unforgettable and stylish.</p>
                 
-                <div class="detail-item">
-                    <span>FB</span>
-                    <div>@YukiApparelPh</div>
+                <div class="contact-cards-container">
+                    <div class="contact-card">
+                        <span class="card-label">FB</span>
+                        <div class="card-val">@YukiApparelPh</div>
+                    </div>
+                    <div class="contact-card">
+                        <span class="card-label">TikTok</span>
+                        <div class="card-val">@YukiApparelPh</div>
+                    </div>
+                    <div class="contact-card">
+                        <span class="card-label">Email</span>
+                        <div class="card-val" style="font-size: 0.85rem;">inquire@yukiapparel.ph</div>
+                    </div>
+                    <div class="contact-card">
+                        <span class="card-label">Contact Person</span>
+                        <div class="card-val">Ms. Edralene Balase</div>
+                    </div>
+                    <div class="contact-card">
+                        <span class="card-label">Phone</span>
+                        <div class="card-val">[Your Number]</div>
+                    </div>
                 </div>
-                <div class="detail-item">
-                    <span>TikTok</span>
-                    <div>@YukiApparelPh</div>
+
+                <div class="rent-section">
+                    <div style="font-size: 2.5rem; margin-bottom: 5px;">📸</div>
+                    <h3>RENT OUR BOOTH</h3>
+                    <p>Make your next event unforgettable<br>and stylish.</p>
                 </div>
-                <div class="detail-item">
-                    <span>Email</span>
-                    <div style="font-size: 1rem;">inquire@yukiapparel.ph</div>
-                </div>
-                <div class="detail-item">
-                    <span>Contact Person</span>
-                    <div>Ms. Edralene Balase</div>
-                </div>
-                <div class="detail-item">
-                    <span>Phone</span>
-                    <div>[Your Number]</div>
-                </div>
+
             </div>
         </div>
 
-        <div style="z-index: 20; text-align: center;">
+        <div class="intro-content-wrapper">
             <h1 class="intro-title">PRIME DUO<span>PHOTOBOOTH PRO</span></h1>
             <button class="btn-pill pulse" onclick="initCameraAndProceed()">👇 Tap to Start</button>
         </div>
@@ -371,7 +408,7 @@
                     <p style="font-size: 0.65rem; color: var(--primary-color); text-align: center; margin-top: 5px;">Drag frame on the screen to reposition.</p>
                 </div>
 
-                <button style="background:transparent; border:none; color:#ff4d4d; font-weight:bold; cursor:pointer; text-decoration:underline; margin-top:15px; font-size:0.9rem;" onclick="startNewSession()">Back to Home</button>
+                <button style="background:transparent; border:none; color:#ff4d4d; font-weight:bold; cursor:pointer; text-decoration:underline; margin-top:15px; font-size:0.9rem;" onclick="startNewSession()">Back to Selection</button>
             </div>
 
             <div class="view-box" id="cameraWrapper">
@@ -388,10 +425,10 @@
     <div id="previewScreen" class="screen">
         <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 5px; text-transform: uppercase;">REVIEW SHOT</h2>
         
-        <div id="randomCompliment" class="random-compliment"></div> 
-
         <div class="view-box" id="previewWrapper" style="margin-bottom: 20px;">
             <img id="previewImage" src="" alt="Captured Photo">
+            
+            <div id="randomCompliment" class="random-compliment"></div> 
         </div>
         
         <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
@@ -410,26 +447,7 @@
             <button class="btn-pill" style="background: #27ae60; border-color: #1e8449; color: white; border-width: 5px;" onclick="generateQR()">📱 Show QR Code</button>
         </div>
         
-        <div class="result-booking">
-            <h3>Rent Our Booth!</h3>
-            <p>For inquiries, hit us up:</p>
-            <div class="contact-grid">
-                <div class="row">
-                    <span class="label">FB</span>
-                    <span class="val">@YukiApparelPh</span>
-                </div>
-                <div class="row">
-                    <span class="label">TikTok</span>
-                    <span class="val">@YukiApparelPh</span>
-                </div>
-                <div class="row">
-                    <span class="label">Email</span>
-                    <span class="val">inquire@yukiapparel.ph</span>
-                </div>
-            </div>
-        </div>
-
-        <button style="background:transparent; border:none; color:var(--text-main); font-weight:bold; cursor:pointer; text-decoration:underline; font-size:1.1rem; margin-top: 25px;" onclick="startNewSession()">🔄 New Session</button>
+        <button style="background:transparent; border:none; color:var(--text-main); font-weight:bold; cursor:pointer; text-decoration:underline; font-size:1.1rem; margin-top:25px;" onclick="startNewSession()">🔄 New Session</button>
     </div>
 
     <div class="qr-modal" id="qrModal">
@@ -548,14 +566,16 @@
             showScreen('setupScreen');
         }
 
+        // NEW SESSION ROUTING TO SETUP SCREEN
         function startNewSession() {
             finalDataURL = null;
-            document.getElementById('proceedBtn').style.display = 'none';
+            document.getElementById('proceedBtn').style.display = 'inline-flex';
             randomCompliment.style.display = 'none'; 
             if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
             document.getElementById('cameraStatus').innerText = "INITIALIZING...";
             captureBtn.disabled = true;
-            showScreen('introScreen');
+            
+            showScreen('setupScreen');
         }
 
         // -----------------------------------------
@@ -781,7 +801,7 @@
         }
 
         // -----------------------------------------
-        // CAPTURE & CANVA PROCESSING
+        // CAPTURE & CANVA PROCESSING (SYNC FIXED)
         // -----------------------------------------
         captureBtn.addEventListener('click', () => {
             captureBtn.disabled = true;
@@ -801,13 +821,16 @@
             }, 1000);
         });
 
+        // ASYNC FIRE AND FORGET TIMING (CALIBRATED)
         async function triggerNodeJSCamera() {
             try {
-                const response = await fetch('http://localhost:3000/trigger-camera');
-                const data = await response.json();
-                if (data.success) playFlashAndProcess(500);
-                else playFlashAndProcess(0);
-            } catch (error) { playFlashAndProcess(0); }
+                fetch('http://localhost:3000/trigger-camera');
+                const dslrFlashDelay = 1200; // Calibrate hardware delay here (in ms)
+                playFlashAndProcess(dslrFlashDelay);
+            } catch (error) { 
+                console.error("No Node.js server found.");
+                playFlashAndProcess(0); 
+            }
         }
 
         async function triggerMobileCapture() {
@@ -881,9 +904,8 @@
             }
             
             const compliments = [
-                "Looks Great! ✨", "Perfect! 💖", "So Cute! 🥰", 
-                "Stunning! 🌟", "Beautiful! 📸", "Amazing! 🎉", 
-                "Nailed it! 🔥", "Gorgeous! 💫"
+                "Nailed it! 🔥", "Looks Great! ✨", "Perfect! 💖", "So Cute! 🥰", 
+                "Stunning! 🌟", "Beautiful! 📸", "Amazing! 🎉", "Gorgeous! 💫"
             ];
             randomCompliment.innerText = compliments[Math.floor(Math.random() * compliments.length)];
             randomCompliment.style.display = 'inline-block';
@@ -959,6 +981,7 @@
                 qrContainer.innerHTML = `<div style="color: red; font-weight: bold; text-align: center;">Upload Failed.<br>Check your Firebase Storage Rules.</div>`;
             }
         }
+
     </script>
 </body>
 </html>
