@@ -11,9 +11,10 @@
 
     <style>
         /* -----------------------------------------
-           CSS VARIABLES FOR THEMING
+           CSS VARIABLES FOR THEMING & RATIO
         ------------------------------------------ */
         :root {
+            --cam-ratio: 3 / 4; /* Master ratio control */
             --primary-glow: #00f0ff;
             --secondary-glow: #ff0040;
             --bg-overlay: rgba(5, 5, 5, 0.85);
@@ -34,12 +35,7 @@
            RESET & GLOBALS
         ------------------------------------------ */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        
-        body { 
-            background: #000; color: var(--text-color); overflow: hidden; 
-            display: flex; align-items: center; justify-content: center; height: 100vh;
-            transition: color 0.5s ease;
-        }
+        body { background: #000; color: var(--text-color); overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; transition: color 0.5s ease; }
 
         /* -----------------------------------------
            DYNAMIC BACKGROUND & PARTICLES
@@ -60,7 +56,8 @@
         .screen.active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 10; }
         .brand-title { font-size: 5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; text-align: center; line-height: 1; margin-bottom: 1rem; color: var(--text-color); text-shadow: 3px 3px 0px var(--secondary-glow), -3px -3px 0px var(--primary-glow); }
         .action-btn { background: var(--text-color); color: var(--bg-overlay); padding: 18px 30px; border-radius: 8px; font-size: 1rem; font-weight: 900; cursor: pointer; border: 2px solid var(--text-color); text-transform: uppercase; letter-spacing: 2px; transition: 0.2s; box-shadow: 5px 5px 0px var(--primary-glow); display: flex; align-items: center; justify-content: center; gap: 10px;}
-        .action-btn:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px var(--secondary-glow); }
+        .action-btn:hover:not(:disabled) { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px var(--secondary-glow); }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; border-color: #555; background: #333; color: #888;}
 
         /* -----------------------------------------
            ADMIN PANEL (HIDDEN)
@@ -72,7 +69,7 @@
         .admin-group { display: flex; flex-direction: column; gap: 5px; }
         .admin-group label { font-size: 0.8rem; letter-spacing: 1px; color: #aaa; }
         .admin-group input, .admin-group select { padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-weight: bold;}
-        .admin-group select option { background: #222; color: #fff; } /* ENSURES READABILITY */
+        .admin-group select option { background: #222; color: #fff; } 
         .admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; }
 
         /* -----------------------------------------
@@ -87,32 +84,51 @@
         input[type="file"] { display: none; }
 
         /* -----------------------------------------
-           BOOTH SCREEN (DYNAMIC ASPECT RATIO)
+           MASTER CAMERA & PREVIEW BOX
+           (This ensures WYSIWYG sizes perfectly)
         ------------------------------------------ */
-        .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1300px; padding: 20px; }
-        .camera-wrapper {
-            position: relative; height: 75vh; 
-            aspect-ratio: 3 / 4; /* DEFAULT. BABAGUHIN NG ADMIN */
-            background: #000; overflow: hidden; border: 4px solid var(--primary-glow);
-            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .view-box {
+            position: relative; 
+            height: 70vh; 
+            width: auto;  
+            max-width: 90vw; 
+            aspect-ratio: var(--cam-ratio); 
+            background: #000; 
+            border: 4px solid var(--primary-glow);
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
             transition: aspect-ratio 0.3s ease;
+            margin: 0 auto;
+            flex-shrink: 0;
         }
+
+        /* LIVE CAMERA SPECIFICS */
+        .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1400px; padding: 20px; justify-content: center;}
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: transform 0.3s; }
         video.no-mirror { transform: scaleX(1); } 
-        .frame-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background-size: 100% 100% !important; background-position: center; z-index: 10;}
-        .countdown-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12rem; font-weight: 900; color: white; text-shadow: 0 10px 40px rgba(0,0,0,0.9); display: none; z-index: 15; }
+
+        /* INTERACTIVE FRAME STYLING */
+        #frameOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;}
+        #frameImage { position: absolute; top: 0%; left: 0%; width: 100%; height: 100%; object-fit: fill; pointer-events: auto; cursor: grab; display: none; }
+        #frameImage:active { cursor: grabbing; }
+
+        .countdown-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12rem; font-weight: 900; color: white; text-shadow: 0 10px 40px rgba(0,0,0,0.9); display: none; z-index: 15; pointer-events: none; }
         .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; opacity: 0; z-index: 20; pointer-events: none; }
         .flash.active { animation: flashAnim 0.8s ease-out; }
         @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
-        .booth-controls { display: flex; flex-direction: column; gap: 15px; width: 300px; background: var(--panel-bg); padding: 30px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid var(--primary-glow);}
+        .booth-controls { display: flex; flex-direction: column; gap: 15px; width: 300px; background: var(--panel-bg); padding: 30px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid var(--primary-glow); flex-shrink: 0;}
+        
+        /* SLIDER CSS */
+        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--primary-glow); cursor: pointer; margin-top: -8px; box-shadow: 0 0 10px var(--primary-glow);}
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #555; border-radius: 5px; }
 
-        /* -----------------------------------------
-           PREVIEW & RESULTS
-        ------------------------------------------ */
-        .preview-wrapper { position: relative; height: 65vh; aspect-ratio: 3 / 4; border: 4px solid var(--primary-glow); margin-bottom: 20px; background: #000; border-radius: 12px; overflow: hidden; transition: aspect-ratio 0.3s ease;}
-        #previewImage { width: 100%; height: 100%; object-fit: cover; }
+        /* PREVIEW IMAGE SPECIFICS */
+        #previewImage { width: 100%; height: 100%; object-fit: contain; } /* Prevents breaking out of container */
         .random-compliment { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 1.5rem; font-weight: 800; border: 2px solid var(--primary-glow); white-space: nowrap; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 20; }
         @keyframes popUp { 0% { transform: translate(-50%, 50px) scale(0); opacity: 0;} 100% { transform: translate(-50%, 0) scale(1); opacity: 1;} }
+        
         .qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 100; }
         .qr-box { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 5px solid var(--primary-glow);}
         
@@ -127,13 +143,12 @@
         if(viewId) {
             const imgData = localStorage.getItem(viewId);
             if(imgData) {
-                // If accessed via QR Code Link, just show the image
                 document.write(`
                     <body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center; height:100vh;">
                         <img src="${imgData}" style="max-width:100%; max-height:100%; object-fit:contain;">
                     </body>
                 `);
-                window.stop(); // Stop loading the rest of the photobooth app
+                window.stop(); 
             }
         }
     </script>
@@ -168,19 +183,19 @@
 
         <div class="admin-group">
             <label>Camera Width (Ratio/Pixels):</label>
-            <input type="number" id="camWidth" value="3">
+            <input type="number" id="camWidth" value="3" oninput="updateCameraRatioLive()">
         </div>
 
         <div class="admin-group">
             <label>Camera Height (Ratio/Pixels):</label>
-            <input type="number" id="camHeight" value="4">
+            <input type="number" id="camHeight" value="4" oninput="updateCameraRatioLive()">
         </div>
 
-        <button class="action-btn" style="width: 100%; margin-top: 10px;" onclick="saveAdminSettings()">Save & Close</button>
+        <button class="action-btn" style="width: 100%; margin-top: 10px;" onclick="toggleAdmin()">Close Panel</button>
     </div>
 
     <div class="footer-brand">
-        POWERED BY YUKI APPAREL PH // SYSTEM V5.0
+        POWERED BY YUKI APPAREL PH // SYSTEM V5.4 (100% WYSIWYG FIX)
     </div>
 
     <div id="introScreen" class="screen active">
@@ -201,17 +216,27 @@
         <div class="booth-container">
             <div class="booth-controls">
                 <h1 style="font-size: 2.5rem; font-weight: 900; line-height: 1; margin-bottom: 10px;">STUDIO</h1>
-                <p id="cameraStatus" style="color: var(--primary-glow); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px;">Initializing...</p>
-                <p style="opacity: 0.8; margin-bottom: 20px; font-size: 0.9rem;">Get ready to smile!</p>
+                <p id="cameraStatus" style="color: var(--primary-glow); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px;">INITIALIZING...</p>
+                <p style="opacity: 0.8; margin-bottom: 10px; font-size: 0.9rem;">Please wait for camera...</p>
                 
-                <button id="captureBtn" class="action-btn" style="width: 100%;">📷 Capture</button>
+                <button id="captureBtn" class="action-btn" style="width: 100%;" disabled>📷 Capture</button>
                 <button id="flipCamBtn" class="action-btn" style="background: transparent; color: var(--text-color); border-color: var(--text-color); margin-top: 10px; display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
+                
+                <div id="frameControls" style="display: none; flex-direction: column; gap: 5px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+                    <label style="font-size: 0.8rem; color: #aaa; font-weight: bold; text-align: center;">FRAME ZOOM</label>
+                    <input type="range" id="frameSizeSlider" min="10" max="300" value="100">
+                    <button class="action-btn" style="padding: 10px; font-size: 0.8rem; margin-top: 5px; background: transparent; color: #fff;" onclick="resetFrame()">🔄 Auto Fit (Reset)</button>
+                    <p style="font-size: 0.7rem; color: var(--primary-glow); text-align: center; margin-top: 5px;">Drag frame on the screen to reposition.</p>
+                </div>
+
                 <button class="action-btn" style="background: transparent; color: #ff0040; border-color: #ff0040; margin-top: 20px;" onclick="startNewSession()">🔙 Back to Home</button>
             </div>
 
-            <div class="camera-wrapper" id="cameraWrapper">
+            <div class="view-box" id="cameraWrapper">
                 <video id="video" autoplay playsinline></video>
-                <div id="frameOverlay" class="frame-overlay"></div>
+                <div id="frameOverlay">
+                    <img id="frameImage" src="" draggable="false">
+                </div>
                 <div id="countdown" class="countdown-display"></div>
                 <div id="flashEffect" class="flash"></div>
             </div>
@@ -220,7 +245,7 @@
 
     <div id="previewScreen" class="screen">
         <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 20px; text-transform: uppercase;">Review Shot</h2>
-        <div class="preview-wrapper" id="previewWrapper">
+        <div class="view-box" id="previewWrapper" style="margin-bottom: 20px;">
             <img id="previewImage" src="" alt="Captured Photo">
             <div id="randomCompliment" class="random-compliment"></div> 
         </div>
@@ -256,6 +281,9 @@
     <script>
         const video = document.getElementById('video');
         const frameOverlay = document.getElementById('frameOverlay');
+        const frameImage = document.getElementById('frameImage');
+        const frameControls = document.getElementById('frameControls');
+        const frameSizeSlider = document.getElementById('frameSizeSlider');
         const captureBtn = document.getElementById('captureBtn');
         const countdownEl = document.getElementById('countdown');
         const flashEffect = document.getElementById('flashEffect');
@@ -266,9 +294,6 @@
         const realtimeClock = document.getElementById('realtimeClock');
         const randomCompliment = document.getElementById('randomCompliment');
         
-        // ADMIN ELEMENTS
-        const cameraWrapper = document.getElementById('cameraWrapper');
-        const previewWrapper = document.getElementById('previewWrapper');
         const camWidthInput = document.getElementById('camWidth');
         const camHeightInput = document.getElementById('camHeight');
         let customRatioWidth = 3;
@@ -281,8 +306,13 @@
         let finalDataURL = null;
         let savedFramesHistory = JSON.parse(localStorage.getItem('yukiFramesHistory')) || [];
 
+        // FRAME MANIPULATION VARIABLES
+        let frameLeft = 0, frameTop = 0, frameWidth = 100, frameHeight = 100;
+        let isDragging = false;
+        let dragStartX, dragStartY, initialLeft, initialTop;
+
         // -----------------------------------------
-        // ADMIN PANEL LOGIC
+        // ADMIN PANEL & LIVE RATIO SYNC
         // -----------------------------------------
         function toggleAdmin() {
             const panel = document.getElementById('adminPanel');
@@ -296,19 +326,20 @@
             }
         }
 
-        function saveAdminSettings() {
-            customRatioWidth = parseFloat(camWidthInput.value) || 3;
-            customRatioHeight = parseFloat(camHeightInput.value) || 4;
-            
-            const newRatio = `${customRatioWidth} / ${customRatioHeight}`;
-            cameraWrapper.style.aspectRatio = newRatio;
-            previewWrapper.style.aspectRatio = newRatio;
-            
-            toggleAdmin();
+        // Sets the CSS Variable so that BOTH Live and Preview boxes sync instantly
+        function updateCameraRatioLive() {
+            let cw = parseFloat(camWidthInput.value);
+            let ch = parseFloat(camHeightInput.value);
+            if (!cw || cw <= 0) cw = 1;
+            if (!ch || ch <= 0) ch = 1;
+            customRatioWidth = cw;
+            customRatioHeight = ch;
+            document.documentElement.style.setProperty('--cam-ratio', `${cw} / ${ch}`);
         }
+        updateCameraRatioLive();
 
         // -----------------------------------------
-        // BACKGROUND PARTICLES GENERATOR
+        // PARTICLES
         // -----------------------------------------
         const particlesContainer = document.getElementById('particlesContainer');
         for(let i=0; i<20; i++) {
@@ -323,7 +354,7 @@
         }
 
         // -----------------------------------------
-        // CLOCK & SCREEN MANAGER
+        // CLOCK & SCREENS
         // -----------------------------------------
         setInterval(() => {
             const now = new Date();
@@ -343,11 +374,14 @@
         function startNewSession() {
             finalDataURL = null;
             document.getElementById('proceedBtn').style.display = 'none';
+            if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
+            document.getElementById('cameraStatus').innerText = "INITIALIZING...";
+            captureBtn.disabled = true;
             showScreen('introScreen');
         }
 
         // -----------------------------------------
-        // GALLERY & FRAME AUTO-FIT LOGIC
+        // GALLERY
         // -----------------------------------------
         function renderGallery() {
             frameGallery.innerHTML = '';
@@ -386,6 +420,16 @@
             uploadedFrameData = dataStr;
             renderGallery(); 
             document.getElementById('proceedBtn').style.display = 'block';
+            
+            if(dataStr) {
+                frameImage.src = dataStr;
+                frameImage.style.display = 'block';
+                frameControls.style.display = 'flex';
+                resetFrame(); 
+            } else {
+                frameImage.style.display = 'none';
+                frameControls.style.display = 'none';
+            }
         }
 
         function handleNewUpload(e) {
@@ -405,7 +449,7 @@
 
         function deleteFrame(index) {
             if(confirm("Delete this frame?")) {
-                if (uploadedFrameData === savedFramesHistory[index]) uploadedFrameData = null;
+                if (uploadedFrameData === savedFramesHistory[index]) selectBorder(null);
                 savedFramesHistory.splice(index, 1);
                 localStorage.setItem('yukiFramesHistory', JSON.stringify(savedFramesHistory));
                 renderGallery();
@@ -413,13 +457,88 @@
         }
 
         // -----------------------------------------
-        // CAMERA LOGIC
+        // INTERACTIVE FRAME LOGIC
+        // -----------------------------------------
+        function updateFrameDOM() {
+            frameImage.style.left = frameLeft + '%';
+            frameImage.style.top = frameTop + '%';
+            frameImage.style.width = frameWidth + '%';
+            frameImage.style.height = frameHeight + '%';
+        }
+
+        function resetFrame() {
+            frameLeft = 0; frameTop = 0; frameWidth = 100; frameHeight = 100;
+            frameSizeSlider.value = 100;
+            updateFrameDOM();
+        }
+
+        frameSizeSlider.addEventListener('input', function() {
+            let scaleRatio = parseInt(this.value) / 100;
+            let newW = 100 * scaleRatio;
+            let newH = 100 * scaleRatio;
+            
+            let diffW = newW - frameWidth;
+            let diffH = newH - frameHeight;
+            frameLeft -= diffW / 2;
+            frameTop -= diffH / 2;
+            
+            frameWidth = newW;
+            frameHeight = newH;
+            updateFrameDOM();
+        });
+
+        function dragStart(e) {
+            if (!uploadedFrameData) return;
+            isDragging = true;
+            let clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+            dragStartX = clientX;
+            dragStartY = clientY;
+            initialLeft = frameLeft;
+            initialTop = frameTop;
+            e.preventDefault(); 
+        }
+
+        function dragMove(e) {
+            if (!isDragging) return;
+            let clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+            
+            let dx = clientX - dragStartX;
+            let dy = clientY - dragStartY;
+            
+            let cw = document.getElementById('cameraWrapper').clientWidth;
+            let ch = document.getElementById('cameraWrapper').clientHeight;
+            
+            frameLeft = initialLeft + (dx / cw) * 100;
+            frameTop = initialTop + (dy / ch) * 100;
+            updateFrameDOM();
+        }
+
+        function dragEnd() { isDragging = false; }
+        frameImage.addEventListener('mousedown', dragStart);
+        frameImage.addEventListener('touchstart', dragStart, {passive: false});
+        document.addEventListener('mousemove', dragMove);
+        document.addEventListener('touchmove', dragMove, {passive: false});
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+
+        // -----------------------------------------
+        // CAMERA SETUP & PROTECTION LOGIC
         // -----------------------------------------
         async function goToBooth() {
-            frameOverlay.style.backgroundImage = uploadedFrameData ? `url('${uploadedFrameData}')` : 'none';
             showScreen('boothScreen');
+            captureBtn.disabled = true; // Protect capture button
+            document.getElementById('cameraStatus').innerText = "INITIALIZING...";
             await startCameraStream();
         }
+
+        // VERY IMPORTANT: Only unlock capture when video is flowing!
+        video.onloadedmetadata = () => {
+            document.getElementById('cameraStatus').innerText = isNikonConnected ? "PRO MODE // NIKON" : `MOBILE // ${mobileFacingMode.toUpperCase()} CAM`;
+            document.querySelector('.booth-controls p:nth-of-type(2)').innerText = "Get ready to smile!";
+            captureBtn.disabled = false;
+        };
 
         async function startCameraStream() {
             if (currentStream) currentStream.getTracks().forEach(track => track.stop());
@@ -440,12 +559,10 @@
 
                 let constraints = {};
                 if (isNikonConnected) {
-                    document.getElementById('cameraStatus').innerText = "PRO MODE // NIKON";
                     document.getElementById('flipCamBtn').style.display = 'none';
                     video.classList.remove('no-mirror');
                     constraints = { video: { deviceId: { exact: selectedDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
                 } else {
-                    document.getElementById('cameraStatus').innerText = `MOBILE // ${mobileFacingMode.toUpperCase()} CAM`;
                     document.getElementById('flipCamBtn').style.display = 'block';
                     if (mobileFacingMode === 'environment') video.classList.add('no-mirror');
                     else video.classList.remove('no-mirror');
@@ -453,16 +570,21 @@
                 }
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = currentStream;
-            } catch (err) { alert("Camera access required."); }
+            } catch (err) { 
+                alert("Camera access required."); 
+                document.getElementById('cameraStatus').innerText = "CAMERA BLOCKED!";
+            }
         }
 
         function flipCamera() {
+            captureBtn.disabled = true;
+            document.getElementById('cameraStatus').innerText = "FLIPPING...";
             mobileFacingMode = mobileFacingMode === 'user' ? 'environment' : 'user';
             startCameraStream();
         }
 
         // -----------------------------------------
-        // CAPTURE & RANDOM EMOJI
+        // CAPTURE & CANVA PROCESSING (BULLETPROOF MATH)
         // -----------------------------------------
         captureBtn.addEventListener('click', () => {
             captureBtn.disabled = true;
@@ -506,46 +628,61 @@
         }
 
         function generateImagePreview() {
-            // USES ADMIN CUSTOM RATIO
+            const vidW = video.videoWidth || 1080;
+            const vidH = video.videoHeight || 1440;
             const targetRatio = customRatioWidth / customRatioHeight; 
-            let srcWidth = video.videoWidth;
-            let srcHeight = video.videoHeight;
-            let drawWidth = srcHeight * targetRatio;
             
-            if(drawWidth > srcWidth) {
-                drawWidth = srcWidth;
-                srcHeight = srcWidth / targetRatio;
-            }
-            
-            let startX = (srcWidth - drawWidth) / 2;
-            let startY = (video.videoHeight - srcHeight) / 2;
+            let drawWidth = vidW;
+            let drawHeight = vidW / targetRatio;
+            let startX = 0;
+            let startY = 0;
 
-            canvas.width = drawWidth;
-            canvas.height = srcHeight;
+            if (drawHeight > vidH) {
+                // Video isn't tall enough, scale via height instead
+                drawHeight = vidH;
+                drawWidth = vidH * targetRatio;
+                startX = (vidW - drawWidth) / 2;
+            } else {
+                startY = (vidH - drawHeight) / 2;
+            }
+
+            canvas.width = Math.max(1, Math.round(drawWidth));
+            canvas.height = Math.max(1, Math.round(drawHeight));
 
             if (isNikonConnected || mobileFacingMode === 'user') {
                 ctx.translate(canvas.width, 0);
                 ctx.scale(-1, 1);
             }
             
-            ctx.drawImage(video, startX, startY, drawWidth, srcHeight, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, startX, startY, drawWidth, drawHeight, 0, 0, canvas.width, canvas.height);
             ctx.setTransform(1, 0, 0, 1, 0, 0);
 
             if (uploadedFrameData) {
                 const img = new Image();
                 img.onload = () => {
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height); // Auto fit 100%
-                    showPreview();
+                    let fw = canvas.width * (frameWidth / 100);
+                    let fh = canvas.height * (frameHeight / 100);
+                    let fx = canvas.width * (frameLeft / 100);
+                    let fy = canvas.height * (frameTop / 100);
+                    
+                    ctx.drawImage(img, fx, fy, fw, fh);
+                    finishPreviewProcessing();
                 };
+                img.onerror = finishPreviewProcessing; // Safety fallback
                 img.src = uploadedFrameData;
             } else {
-                showPreview();
+                finishPreviewProcessing();
             }
         }
 
-        function showPreview() {
-            finalDataURL = canvas.toDataURL('image/jpeg', 1.0);
-            previewImage.src = finalDataURL;
+        function finishPreviewProcessing() {
+            try {
+                finalDataURL = canvas.toDataURL('image/jpeg', 0.95);
+                previewImage.src = finalDataURL;
+            } catch (e) {
+                console.error("Canvas export failed", e);
+                alert("Failed to process image. Make sure camera is not blocked.");
+            }
             
             const compliments = ["Yuki Style! 🔥", "Perfect Smile! 😄", "Stunning! ✨", "Awesome Look! 📸", "So Fresh! ❄️", "Drip Too Hard! 💧"];
             randomCompliment.innerText = compliments[Math.floor(Math.random() * compliments.length)];
@@ -568,6 +705,7 @@
         }
 
         function downloadJPG() {
+            if(!finalDataURL) return;
             const link = document.createElement('a');
             link.download = getFileName() + ".jpg";
             link.href = finalDataURL;
@@ -577,6 +715,7 @@
         }
 
         function exportPDF() {
+            if(!finalDataURL) return;
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
             const imgProps = pdf.getImageProperties(finalDataURL);
@@ -588,20 +727,19 @@
         }
 
         function generateQR() {
+            if(!finalDataURL) return;
             const qrContainer = document.getElementById('qrCodeContainer');
             qrContainer.innerHTML = ""; 
             
-            // SAVE IMAGE TO LOCAL STORAGE FOR QR VIEWING
             const imageId = 'yuki_photo_' + new Date().getTime();
             try {
                 localStorage.setItem(imageId, finalDataURL);
             } catch (e) {
-                alert("Browser Storage is full! Some older scanned photos might not work. Clearing old cache...");
-                localStorage.clear(); // Emergency clear if they took too many massive photos
+                alert("Browser Storage is full! Clearing old cache to make space...");
+                localStorage.clear(); 
                 localStorage.setItem(imageId, finalDataURL);
             }
 
-            // GET CURRENT DEVICE IP / URL AND APPEND THE IMAGE ID
             const currentUrl = window.location.origin + window.location.pathname;
             const viewLink = `${currentUrl}?view=${imageId}`;
 
