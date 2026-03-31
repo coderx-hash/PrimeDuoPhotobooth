@@ -42,76 +42,44 @@
         }
 
         /* -----------------------------------------
-           DYNAMIC BACKGROUND IMAGES & FLOATING PARTICLES
+           DYNAMIC BACKGROUND & PARTICLES
         ------------------------------------------ */
-        .bg-slider {
-            position: absolute; top: -10%; left: -10%; width: 120%; height: 120%;
-            background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), var(--bg-image);
-            background-size: cover; background-position: center;
-            animation: slowPan 30s linear infinite alternate; z-index: -3; filter: var(--bg-filter); transition: all 0.5s ease;
-        }
+        .bg-slider { position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), var(--bg-image); background-size: cover; background-position: center; animation: slowPan 30s linear infinite alternate; z-index: -3; filter: var(--bg-filter); transition: all 0.5s ease; }
         @keyframes slowPan { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.1) translate(-2%, -2%); } }
-
-        .grid-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(rgba(128, 128, 128, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(128, 128, 128, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px; z-index: -2; pointer-events: none;
-        }
-
-        /* Floating Particles / Bokeh Effect */
+        .grid-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(128, 128, 128, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(128, 128, 128, 0.1) 1px, transparent 1px); background-size: 50px 50px; z-index: -2; pointer-events: none; }
         .particles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: hidden; }
-        .particle {
-            position: absolute; bottom: -10%; background: var(--primary-glow); border-radius: 50%;
-            opacity: 0.3; filter: blur(5px); animation: floatUp linear infinite;
-        }
+        .particle { position: absolute; bottom: -10%; background: var(--primary-glow); border-radius: 50%; opacity: 0.3; filter: blur(5px); animation: floatUp linear infinite; }
         @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { opacity: 0.6; } 100% { transform: translateY(-120vh) scale(1.5); opacity: 0; } }
 
         /* -----------------------------------------
-           UI ELEMENTS & DROPDOWN FIX
+           UI ELEMENTS
         ------------------------------------------ */
         .top-bar { position: absolute; top: 20px; left: 30px; right: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 50; font-size: 1rem; font-weight: 800; letter-spacing: 2px; color: var(--text-color); pointer-events: none; opacity: 0.8; }
         .footer-brand { position: absolute; bottom: 20px; text-align: center; width: 100%; font-size: 0.8rem; letter-spacing: 5px; color: var(--text-color); font-weight: 800; z-index: 50; text-transform: uppercase; opacity: 0.6; }
-
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.98); }
         .screen.active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 10; }
-
         .brand-title { font-size: 5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; text-align: center; line-height: 1; margin-bottom: 1rem; color: var(--text-color); text-shadow: 3px 3px 0px var(--secondary-glow), -3px -3px 0px var(--primary-glow); }
-        
         .action-btn { background: var(--text-color); color: var(--bg-overlay); padding: 18px 30px; border-radius: 8px; font-size: 1rem; font-weight: 900; cursor: pointer; border: 2px solid var(--text-color); text-transform: uppercase; letter-spacing: 2px; transition: 0.2s; box-shadow: 5px 5px 0px var(--primary-glow); display: flex; align-items: center; justify-content: center; gap: 10px;}
         .action-btn:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px var(--secondary-glow); }
 
-        /* FIX: THEME SELECTOR DROPDOWN STYLING */
-        .theme-selector-dropdown {
-            background: rgba(0, 0, 0, 0.7); /* Solid dark background to ensure readability */
-            border: 2px solid var(--primary-glow);
-            color: #ffffff; /* Force white text */
-            font-size: 1.2rem;
-            font-weight: 800;
-            cursor: pointer;
-            outline: none;
-            text-transform: uppercase;
-            padding: 10px 15px;
-            border-radius: 8px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-            appearance: none; /* Removes default browser styling */
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            text-align: center;
-        }
-        
-        .theme-selector-dropdown option {
-            background-color: #1a1a1a; /* Very dark grey for dropdown list items */
-            color: #ffffff; /* White text for options */
-            font-weight: bold;
-            text-shadow: none; /* Clean text for readability */
-            padding: 10px;
-        }
-        
         /* -----------------------------------------
-           SETUP SCREEN (FRAME GALLERY)
+           ADMIN PANEL (HIDDEN)
+        ------------------------------------------ */
+        .admin-trigger { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; cursor: pointer; z-index: 100; opacity: 0.3; transition: 0.3s; pointer-events: auto;}
+        .admin-trigger:hover { opacity: 1; }
+        .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; color: #fff; padding: 40px; border-radius: 16px; border: 2px solid var(--primary-glow); z-index: 1000; display: none; flex-direction: column; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); width: 400px;}
+        .admin-panel h2 { margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px;}
+        .admin-group { display: flex; flex-direction: column; gap: 5px; }
+        .admin-group label { font-size: 0.8rem; letter-spacing: 1px; color: #aaa; }
+        .admin-group input, .admin-group select { padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-weight: bold;}
+        .admin-group select option { background: #222; color: #fff; } /* ENSURES READABILITY */
+        .admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; }
+
+        /* -----------------------------------------
+           SETUP SCREEN & GALLERY
         ------------------------------------------ */
         .gallery-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1000px; margin-bottom: 40px; padding: 20px; background: var(--panel-bg); border: 1px solid var(--primary-glow); backdrop-filter: blur(10px); border-radius: 16px; }
-        .gallery-card { width: 140px; height: 186px; /* 3:4 ratio */ background: rgba(0,0,0,0.5); border: 2px solid transparent; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; text-align: center; color: #fff; overflow: hidden; }
+        .gallery-card { width: 140px; height: 186px; background: rgba(0,0,0,0.5); border: 2px solid transparent; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; text-align: center; color: #fff; overflow: hidden; }
         .gallery-card:hover { border-color: var(--text-color); transform: translateY(-5px); }
         .gallery-card.selected { border-color: var(--primary-glow); box-shadow: 0 0 20px var(--primary-glow); }
         .frame-preview { width: 100%; height: 100%; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; pointer-events: none; }
@@ -119,48 +87,33 @@
         input[type="file"] { display: none; }
 
         /* -----------------------------------------
-           BOOTH SCREEN (WIDER 3:4 ASPECT RATIO)
+           BOOTH SCREEN (DYNAMIC ASPECT RATIO)
         ------------------------------------------ */
         .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1300px; padding: 20px; }
         .camera-wrapper {
             position: relative; height: 75vh; 
-            aspect-ratio: 3 / 4; /* PINALAPAD NA CAMERA VIEW */
+            aspect-ratio: 3 / 4; /* DEFAULT. BABAGUHIN NG ADMIN */
             background: #000; overflow: hidden; border: 4px solid var(--primary-glow);
             border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: aspect-ratio 0.3s ease;
         }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: transform 0.3s; }
         video.no-mirror { transform: scaleX(1); } 
-
-        /* FORCE AUTO-FIT NO SPACES FOR FRAMES */
         .frame-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background-size: 100% 100% !important; background-position: center; z-index: 10;}
         .countdown-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12rem; font-weight: 900; color: white; text-shadow: 0 10px 40px rgba(0,0,0,0.9); display: none; z-index: 15; }
         .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; opacity: 0; z-index: 20; pointer-events: none; }
         .flash.active { animation: flashAnim 0.8s ease-out; }
         @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
-
         .booth-controls { display: flex; flex-direction: column; gap: 15px; width: 300px; background: var(--panel-bg); padding: 30px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid var(--primary-glow);}
-        
-        /* -----------------------------------------
-           PREVIEW & RESULTS (WITH EMOJI & QR)
-        ------------------------------------------ */
-        .preview-wrapper { position: relative; height: 65vh; aspect-ratio: 3 / 4; border: 4px solid var(--primary-glow); margin-bottom: 20px; background: #000; border-radius: 12px; overflow: hidden;}
-        #previewImage { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* RANDOM EMOJI COMPLIMENT */
-        .random-compliment {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.7); color: #fff; padding: 10px 20px; border-radius: 50px;
-            font-size: 1.5rem; font-weight: 800; border: 2px solid var(--primary-glow);
-            white-space: nowrap; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 20;
-        }
-        @keyframes popUp { 0% { transform: translate(-50%, 50px) scale(0); opacity: 0;} 100% { transform: translate(-50%, 0) scale(1); opacity: 1;} }
 
-        /* QR CODE MODAL */
-        .qr-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9);
-            display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 100;
-        }
+        /* -----------------------------------------
+           PREVIEW & RESULTS
+        ------------------------------------------ */
+        .preview-wrapper { position: relative; height: 65vh; aspect-ratio: 3 / 4; border: 4px solid var(--primary-glow); margin-bottom: 20px; background: #000; border-radius: 12px; overflow: hidden; transition: aspect-ratio 0.3s ease;}
+        #previewImage { width: 100%; height: 100%; object-fit: cover; }
+        .random-compliment { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 1.5rem; font-weight: 800; border: 2px solid var(--primary-glow); white-space: nowrap; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 20; }
+        @keyframes popUp { 0% { transform: translate(-50%, 50px) scale(0); opacity: 0;} 100% { transform: translate(-50%, 0) scale(1); opacity: 1;} }
+        .qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 100; }
         .qr-box { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 5px solid var(--primary-glow);}
         
         #canvas { display: none; }
@@ -168,27 +121,41 @@
 </head>
 <body class="theme-dark">
 
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewId = urlParams.get('view');
+        if(viewId) {
+            const imgData = localStorage.getItem(viewId);
+            if(imgData) {
+                // If accessed via QR Code Link, just show the image
+                document.write(`
+                    <body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center; height:100vh;">
+                        <img src="${imgData}" style="max-width:100%; max-height:100%; object-fit:contain;">
+                    </body>
+                `);
+                window.stop(); // Stop loading the rest of the photobooth app
+            }
+        }
+    </script>
+
     <div class="bg-slider"></div>
     <div class="grid-overlay"></div>
-    
     <div class="particles" id="particlesContainer"></div>
 
     <div class="top-bar">
         <div>LIVE STUDIO APP</div>
         <div id="realtimeClock">--:--:--</div>
     </div>
+    
+    <div class="admin-trigger" onclick="toggleAdmin()">⚙️</div>
 
-    <div class="footer-brand">
-        POWERED BY YUKI APPAREL PH // SYSTEM V5.0
-    </div>
-
-    <div id="introScreen" class="screen active">
-        <h1 class="brand-title">PRIME DUO<span>PHOTOBOOTH</span></h1>
+    <div class="admin-overlay" id="adminOverlay" onclick="toggleAdmin()"></div>
+    <div class="admin-panel" id="adminPanel">
+        <h2>Admin Settings</h2>
         
-        <div style="margin-bottom: 2rem; background: var(--panel-bg); padding: 15px 30px; border-radius: 50px; border: 1px solid var(--primary-glow); backdrop-filter: blur(5px); display: flex; align-items: center; gap: 15px;">
-            <label style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.8; color: #fff;">EVENT THEME:</label>
-            
-            <select class="theme-selector-dropdown" onchange="document.body.className = this.value">
+        <div class="admin-group">
+            <label>Event Theme:</label>
+            <select id="adminThemeSelect" onchange="document.body.className = this.value">
                 <option value="theme-dark">Dark / Edgy (Default)</option>
                 <option value="theme-wedding">Wedding / Kasal</option>
                 <option value="theme-rock">Rock / Grunge</option>
@@ -199,6 +166,25 @@
             </select>
         </div>
 
+        <div class="admin-group">
+            <label>Camera Width (Ratio/Pixels):</label>
+            <input type="number" id="camWidth" value="3">
+        </div>
+
+        <div class="admin-group">
+            <label>Camera Height (Ratio/Pixels):</label>
+            <input type="number" id="camHeight" value="4">
+        </div>
+
+        <button class="action-btn" style="width: 100%; margin-top: 10px;" onclick="saveAdminSettings()">Save & Close</button>
+    </div>
+
+    <div class="footer-brand">
+        POWERED BY YUKI APPAREL PH // SYSTEM V5.0
+    </div>
+
+    <div id="introScreen" class="screen active">
+        <h1 class="brand-title">PRIME DUO<span>PHOTOBOOTH</span></h1>
         <button class="action-btn" onclick="initCameraAndProceed()">Tap to Start</button>
     </div>
 
@@ -220,11 +206,10 @@
                 
                 <button id="captureBtn" class="action-btn" style="width: 100%;">📷 Capture</button>
                 <button id="flipCamBtn" class="action-btn" style="background: transparent; color: var(--text-color); border-color: var(--text-color); margin-top: 10px; display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
-                
                 <button class="action-btn" style="background: transparent; color: #ff0040; border-color: #ff0040; margin-top: 20px;" onclick="startNewSession()">🔙 Back to Home</button>
             </div>
 
-            <div class="camera-wrapper">
+            <div class="camera-wrapper" id="cameraWrapper">
                 <video id="video" autoplay playsinline></video>
                 <div id="frameOverlay" class="frame-overlay"></div>
                 <div id="countdown" class="countdown-display"></div>
@@ -235,7 +220,7 @@
 
     <div id="previewScreen" class="screen">
         <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 20px; text-transform: uppercase;">Review Shot</h2>
-        <div class="preview-wrapper">
+        <div class="preview-wrapper" id="previewWrapper">
             <img id="previewImage" src="" alt="Captured Photo">
             <div id="randomCompliment" class="random-compliment"></div> 
         </div>
@@ -260,16 +245,15 @@
     </div>
 
     <div class="qr-modal" id="qrModal">
-        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 20px;">SCAN TO DOWNLOAD</h2>
+        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: #fff;">SCAN TO VIEW</h2>
+        <p style="color: #aaa; margin-bottom: 20px; text-align: center;">Make sure your phone is on the same Wi-Fi network.</p>
         <div class="qr-box" id="qrCodeContainer"></div>
-        <p style="margin-top: 10px; color: #ccc;">(Ready for Firebase Integration)</p>
         <button class="action-btn" style="margin-top: 20px; background: transparent; color: #fff;" onclick="document.getElementById('qrModal').style.display='none'">Close</button>
     </div>
 
     <canvas id="canvas"></canvas>
 
     <script>
-        // DOM Elements
         const video = document.getElementById('video');
         const frameOverlay = document.getElementById('frameOverlay');
         const captureBtn = document.getElementById('captureBtn');
@@ -281,6 +265,14 @@
         const frameGallery = document.getElementById('frameGallery');
         const realtimeClock = document.getElementById('realtimeClock');
         const randomCompliment = document.getElementById('randomCompliment');
+        
+        // ADMIN ELEMENTS
+        const cameraWrapper = document.getElementById('cameraWrapper');
+        const previewWrapper = document.getElementById('previewWrapper');
+        const camWidthInput = document.getElementById('camWidth');
+        const camHeightInput = document.getElementById('camHeight');
+        let customRatioWidth = 3;
+        let customRatioHeight = 4;
 
         let uploadedFrameData = null; 
         let isNikonConnected = false;
@@ -288,6 +280,32 @@
         let currentStream = null;
         let finalDataURL = null;
         let savedFramesHistory = JSON.parse(localStorage.getItem('yukiFramesHistory')) || [];
+
+        // -----------------------------------------
+        // ADMIN PANEL LOGIC
+        // -----------------------------------------
+        function toggleAdmin() {
+            const panel = document.getElementById('adminPanel');
+            const overlay = document.getElementById('adminOverlay');
+            if(panel.style.display === 'flex') {
+                panel.style.display = 'none';
+                overlay.style.display = 'none';
+            } else {
+                panel.style.display = 'flex';
+                overlay.style.display = 'block';
+            }
+        }
+
+        function saveAdminSettings() {
+            customRatioWidth = parseFloat(camWidthInput.value) || 3;
+            customRatioHeight = parseFloat(camHeightInput.value) || 4;
+            
+            const newRatio = `${customRatioWidth} / ${customRatioHeight}`;
+            cameraWrapper.style.aspectRatio = newRatio;
+            previewWrapper.style.aspectRatio = newRatio;
+            
+            toggleAdmin();
+        }
 
         // -----------------------------------------
         // BACKGROUND PARTICLES GENERATOR
@@ -395,7 +413,7 @@
         }
 
         // -----------------------------------------
-        // CAMERA LOGIC (WIDER 3:4 RATIO)
+        // CAMERA LOGIC
         // -----------------------------------------
         async function goToBooth() {
             frameOverlay.style.backgroundImage = uploadedFrameData ? `url('${uploadedFrameData}')` : 'none';
@@ -488,13 +506,12 @@
         }
 
         function generateImagePreview() {
-            // WIDER ASPECT RATIO FOR CROPPING (3/4)
-            const targetRatio = 3 / 4; 
+            // USES ADMIN CUSTOM RATIO
+            const targetRatio = customRatioWidth / customRatioHeight; 
             let srcWidth = video.videoWidth;
             let srcHeight = video.videoHeight;
             let drawWidth = srcHeight * targetRatio;
             
-            // Just in case screen is exceptionally wide, adjust calculation
             if(drawWidth > srcWidth) {
                 drawWidth = srcWidth;
                 srcHeight = srcWidth / targetRatio;
@@ -517,8 +534,7 @@
             if (uploadedFrameData) {
                 const img = new Image();
                 img.onload = () => {
-                    // AUTO FIT EXACTLY TO CANVAS (100% 100%)
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height); // Auto fit 100%
                     showPreview();
                 };
                 img.src = uploadedFrameData;
@@ -531,7 +547,6 @@
             finalDataURL = canvas.toDataURL('image/jpeg', 1.0);
             previewImage.src = finalDataURL;
             
-            // RANDOM EMOJI COMPLIMENT
             const compliments = ["Yuki Style! 🔥", "Perfect Smile! 😄", "Stunning! ✨", "Awesome Look! 📸", "So Fresh! ❄️", "Drip Too Hard! 💧"];
             randomCompliment.innerText = compliments[Math.floor(Math.random() * compliments.length)];
             
@@ -545,7 +560,7 @@
         }
 
         // -----------------------------------------
-        // EXPORT OPTIONS (JPG, PDF, QR)
+        // EXPORT OPTIONS & LOCAL STORAGE QR
         // -----------------------------------------
         function getFileName() {
             const dateStr = new Date().toISOString().split('T')[0];
@@ -566,7 +581,6 @@
             const pdf = new jsPDF('p', 'mm', 'a4');
             const imgProps = pdf.getImageProperties(finalDataURL);
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            // Calculate height keeping aspect ratio 3:4
             const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
             
             pdf.addImage(finalDataURL, 'JPEG', 0, 0, pdfWidth, pdfHeight);
@@ -575,19 +589,29 @@
 
         function generateQR() {
             const qrContainer = document.getElementById('qrCodeContainer');
-            qrContainer.innerHTML = ""; // Clear old QR
+            qrContainer.innerHTML = ""; 
             
-            // DITO PAPASOK ANG FIREBASE LOGIC MO
-            // Halimbawa: const downloadLink = await uploadToFirebase(finalDataURL);
-            const placeholderLink = "https://yuki-apparel.firebaseapp.com/gallery/" + new Date().getTime(); 
+            // SAVE IMAGE TO LOCAL STORAGE FOR QR VIEWING
+            const imageId = 'yuki_photo_' + new Date().getTime();
+            try {
+                localStorage.setItem(imageId, finalDataURL);
+            } catch (e) {
+                alert("Browser Storage is full! Some older scanned photos might not work. Clearing old cache...");
+                localStorage.clear(); // Emergency clear if they took too many massive photos
+                localStorage.setItem(imageId, finalDataURL);
+            }
+
+            // GET CURRENT DEVICE IP / URL AND APPEND THE IMAGE ID
+            const currentUrl = window.location.origin + window.location.pathname;
+            const viewLink = `${currentUrl}?view=${imageId}`;
 
             new QRCode(qrContainer, {
-                text: placeholderLink,
+                text: viewLink,
                 width: 250,
                 height: 250,
                 colorDark : "#000000",
                 colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+                correctLevel : QRCode.CorrectLevel.L
             });
 
             document.getElementById('qrModal').style.display = 'flex';
