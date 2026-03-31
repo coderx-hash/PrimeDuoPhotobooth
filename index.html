@@ -5,193 +5,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRIME DUO PHOTOBOOTH</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <style>
-        /* RESET & GLOBALS */
+        /* -----------------------------------------
+           CSS VARIABLES FOR THEMING
+        ------------------------------------------ */
+        :root {
+            --primary-glow: #00f0ff;
+            --secondary-glow: #ff0040;
+            --bg-overlay: rgba(5, 5, 5, 0.85);
+            --bg-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop');
+            --bg-filter: grayscale(100%) contrast(120%);
+            --text-color: #ffffff;
+            --panel-bg: rgba(0, 0, 0, 0.6);
+        }
+
+        body.theme-wedding { --primary-glow: #ffd700; --secondary-glow: #ffb6c1; --bg-overlay: rgba(255, 255, 255, 0.6); --bg-image: url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop'); --bg-filter: none; --text-color: #222; --panel-bg: rgba(255, 255, 255, 0.8); }
+        body.theme-rock { --primary-glow: #ff0000; --secondary-glow: #8b0000; --bg-overlay: rgba(10, 0, 0, 0.85); --bg-image: url('https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?q=80&w=2070&auto=format&fit=crop'); --bg-filter: contrast(150%) brightness(80%); --text-color: #fff; --panel-bg: rgba(20, 0, 0, 0.8); }
+        body.theme-birthday { --primary-glow: #ff00ff; --secondary-glow: #00ffff; --bg-overlay: rgba(255, 255, 255, 0.3); --bg-image: url('https://images.unsplash.com/photo-1530103862676-de8892795f5f?q=80&w=2070&auto=format&fit=crop'); --bg-filter: saturate(150%); --text-color: #111; --panel-bg: rgba(255, 255, 255, 0.85); }
+        body.theme-fiesta { --primary-glow: #ff4500; --secondary-glow: #ffd700; --bg-overlay: rgba(0, 0, 0, 0.5); --bg-image: url('https://images.unsplash.com/photo-1511556532299-8f662fc26c06?q=80&w=2070&auto=format&fit=crop'); --bg-filter: saturate(200%); --text-color: #fff; --panel-bg: rgba(0, 0, 0, 0.7); }
+        body.theme-christening { --primary-glow: #87ceeb; --secondary-glow: #ffb6c1; --bg-overlay: rgba(255, 255, 255, 0.5); --bg-image: url('https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=2070&auto=format&fit=crop'); --bg-filter: brightness(110%) blur(2px); --text-color: #444; --panel-bg: rgba(255, 255, 255, 0.9); }
+        body.theme-party { --primary-glow: #ff00ff; --secondary-glow: #00ff00; --bg-overlay: rgba(10, 0, 20, 0.7); --bg-image: url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=2070&auto=format&fit=crop'); --bg-filter: saturate(200%) contrast(120%); --text-color: #fff; --panel-bg: rgba(15, 0, 30, 0.8); }
+
+        /* -----------------------------------------
+           RESET & GLOBALS
+        ------------------------------------------ */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         
         body { 
-            background: #050505; 
-            color: #fff; 
-            overflow: hidden; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh;
+            background: #000; color: var(--text-color); overflow: hidden; 
+            display: flex; align-items: center; justify-content: center; height: 100vh;
+            transition: color 0.5s ease;
         }
 
         /* -----------------------------------------
-           DYNAMIC BACKGROUND IMAGES & EFFECTS
+           DYNAMIC BACKGROUND IMAGES & FLOATING PARTICLES
         ------------------------------------------ */
         .bg-slider {
             position: absolute; top: -10%; left: -10%; width: 120%; height: 120%;
-            background-image: 
-                linear-gradient(rgba(5, 5, 5, 0.85), rgba(5, 5, 5, 0.95)), /* Dark Overlay */
-                url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop'); /* Edgy Urban BG */
-            background-size: cover;
-            background-position: center;
-            animation: slowPan 30s linear infinite alternate;
-            z-index: -2;
-            filter: grayscale(100%) contrast(120%);
+            background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), var(--bg-image);
+            background-size: cover; background-position: center;
+            animation: slowPan 30s linear infinite alternate; z-index: -3; filter: var(--bg-filter); transition: all 0.5s ease;
         }
         @keyframes slowPan { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.1) translate(-2%, -2%); } }
 
         .grid-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
-            z-index: -1; pointer-events: none;
+            background-image: linear-gradient(rgba(128, 128, 128, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(128, 128, 128, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px; z-index: -2; pointer-events: none;
         }
 
-        /* -----------------------------------------
-           REAL-TIME CLOCK & BRAND FOOTER
-        ------------------------------------------ */
-        .top-bar {
-            position: absolute; top: 20px; left: 30px; right: 30px;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 50; font-size: 1rem; font-weight: 500; letter-spacing: 2px;
-            color: #aaa; pointer-events: none;
+        /* Floating Particles / Bokeh Effect */
+        .particles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: hidden; }
+        .particle {
+            position: absolute; bottom: -10%; background: var(--primary-glow); border-radius: 50%;
+            opacity: 0.3; filter: blur(5px); animation: floatUp linear infinite;
         }
-        .clock-display { font-weight: 800; color: #fff; }
-        .footer-brand {
-            position: absolute; bottom: 20px; text-align: center; width: 100%;
-            font-size: 0.8rem; letter-spacing: 5px; color: #555; font-weight: 800; z-index: 50;
-            text-transform: uppercase;
-        }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { opacity: 0.6; } 100% { transform: translateY(-120vh) scale(1.5); opacity: 0; } }
 
         /* -----------------------------------------
-           SCREEN MANAGER & UI ELEMENTS
+           UI ELEMENTS
         ------------------------------------------ */
-        .screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.98);
-        }
+        .top-bar { position: absolute; top: 20px; left: 30px; right: 30px; display: flex; justify-content: space-between; align-items: center; z-index: 50; font-size: 1rem; font-weight: 800; letter-spacing: 2px; color: var(--text-color); pointer-events: none; opacity: 0.8; }
+        .footer-brand { position: absolute; bottom: 20px; text-align: center; width: 100%; font-size: 0.8rem; letter-spacing: 5px; color: var(--text-color); font-weight: 800; z-index: 50; text-transform: uppercase; opacity: 0.6; }
+
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.98); }
         .screen.active { opacity: 1; pointer-events: auto; transform: scale(1); z-index: 10; }
 
-        .brand-title {
-            font-size: 5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;
-            text-align: center; line-height: 1; margin-bottom: 2rem; color: #fff;
-            text-shadow: 3px 3px 0px #ff0040, -3px -3px 0px #00f0ff; 
-        }
-        .brand-title span { display: block; font-size: 1.8rem; font-weight: 500; letter-spacing: 12px; color: #fff; text-shadow: none; margin-top: 10px;}
-
-        .action-btn {
-            background: #fff; color: #000; padding: 18px 40px; border-radius: 0;
-            font-size: 1.1rem; font-weight: 900; cursor: pointer; border: 2px solid #fff; 
-            text-transform: uppercase; letter-spacing: 2px; transition: 0.2s;
-            box-shadow: 5px 5px 0px rgba(255,255,255,0.2);
-        }
-        .action-btn:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px rgba(255,255,255,0.4); background: #f0f0f0; }
-        .action-btn:disabled { background: #333; color: #666; border-color: #333; box-shadow: none; cursor: not-allowed; }
-
+        .brand-title { font-size: 5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; text-align: center; line-height: 1; margin-bottom: 1rem; color: var(--text-color); text-shadow: 3px 3px 0px var(--secondary-glow), -3px -3px 0px var(--primary-glow); }
+        .action-btn { background: var(--text-color); color: var(--bg-overlay); padding: 18px 30px; border-radius: 8px; font-size: 1rem; font-weight: 900; cursor: pointer; border: 2px solid var(--text-color); text-transform: uppercase; letter-spacing: 2px; transition: 0.2s; box-shadow: 5px 5px 0px var(--primary-glow); display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .action-btn:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px var(--secondary-glow); }
+        
         /* -----------------------------------------
            SETUP SCREEN (FRAME GALLERY)
         ------------------------------------------ */
-        #setupScreen h2 { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 3px;}
-        #setupScreen p.subtitle { color: #888; margin-bottom: 30px; font-size: 1rem; }
-
-        .gallery-container {
-            display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;
-            max-width: 1000px; margin-bottom: 40px;
-            padding: 20px; background: rgba(0,0,0,0.6); border: 1px solid #333; backdrop-filter: blur(10px);
-        }
-
-        .gallery-card {
-            width: 140px; height: 200px;
-            background: #111; border: 2px solid #333;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; position: relative; transition: 0.2s;
-            text-align: center;
-        }
-        .gallery-card:hover { border-color: #fff; transform: translateY(-5px); }
-        .gallery-card.selected { border-color: #00f0ff; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); background: rgba(0, 240, 255, 0.1); }
-        
-        /* Rendered frames from history */
-        .frame-preview {
-            width: 100%; height: 100%;
-            background-size: contain; background-position: center; background-repeat: no-repeat;
-            pointer-events: none; /* Let clicks pass to the card */
-        }
-        
-        .delete-btn {
-            position: absolute; top: -10px; right: -10px;
-            background: #ff0040; color: #fff; width: 25px; height: 25px;
-            border-radius: 50%; border: none; font-weight: bold; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; z-index: 5;
-            transition: 0.2s; font-size: 12px;
-        }
-        .delete-btn:hover { transform: scale(1.2); }
-
-        .upload-label { font-size: 0.8rem; font-weight: 800; color: #aaa; text-transform: uppercase; margin-top: 10px;}
-        .gallery-card .icon { font-size: 2rem; color: #fff; }
-
+        .gallery-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1000px; margin-bottom: 40px; padding: 20px; background: var(--panel-bg); border: 1px solid var(--primary-glow); backdrop-filter: blur(10px); border-radius: 16px; }
+        .gallery-card { width: 140px; height: 186px; /* 3:4 ratio */ background: rgba(0,0,0,0.5); border: 2px solid transparent; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; text-align: center; color: #fff; overflow: hidden; }
+        .gallery-card:hover { border-color: var(--text-color); transform: translateY(-5px); }
+        .gallery-card.selected { border-color: var(--primary-glow); box-shadow: 0 0 20px var(--primary-glow); }
+        .frame-preview { width: 100%; height: 100%; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; pointer-events: none; }
+        .delete-btn { position: absolute; top: 5px; right: 5px; background: #ff0040; color: #fff; width: 25px; height: 25px; border-radius: 50%; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; }
         input[type="file"] { display: none; }
 
         /* -----------------------------------------
-           BOOTH, PREVIEW & RESULT STYLES
+           BOOTH SCREEN (WIDER 3:4 ASPECT RATIO)
         ------------------------------------------ */
-        .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1200px; padding: 20px; }
+        .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1300px; padding: 20px; }
         .camera-wrapper {
-            position: relative; height: 80vh; aspect-ratio: 9 / 16;
-            background: #000; overflow: hidden; border: 4px solid #fff;
+            position: relative; height: 75vh; 
+            aspect-ratio: 3 / 4; /* PINALAPAD NA CAMERA VIEW */
+            background: #000; overflow: hidden; border: 4px solid var(--primary-glow);
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: transform 0.3s; }
         video.no-mirror { transform: scaleX(1); } 
 
-        .frame-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background-size: 100% 100%; z-index: 10;}
+        /* FORCE AUTO-FIT NO SPACES FOR FRAMES */
+        .frame-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background-size: 100% 100% !important; background-position: center; z-index: 10;}
         .countdown-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12rem; font-weight: 900; color: white; text-shadow: 0 10px 40px rgba(0,0,0,0.9); display: none; z-index: 15; }
         .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; opacity: 0; z-index: 20; pointer-events: none; }
         .flash.active { animation: flashAnim 0.8s ease-out; }
         @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
 
-        .booth-controls { display: flex; flex-direction: column; gap: 15px; width: 300px; }
-        .status-text { color: #00f0ff; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px;}
-
-        .preview-wrapper { height: 65vh; aspect-ratio: 9 / 16; border: 4px solid #fff; margin-bottom: 30px; background: #111;}
+        .booth-controls { display: flex; flex-direction: column; gap: 15px; width: 300px; background: var(--panel-bg); padding: 30px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid var(--primary-glow);}
+        
+        /* -----------------------------------------
+           PREVIEW & RESULTS (WITH EMOJI & QR)
+        ------------------------------------------ */
+        .preview-wrapper { position: relative; height: 65vh; aspect-ratio: 3 / 4; border: 4px solid var(--primary-glow); margin-bottom: 20px; background: #000; border-radius: 12px; overflow: hidden;}
         #previewImage { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* RANDOM EMOJI COMPLIMENT */
+        .random-compliment {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); color: #fff; padding: 10px 20px; border-radius: 50px;
+            font-size: 1.5rem; font-weight: 800; border: 2px solid var(--primary-glow);
+            white-space: nowrap; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 20;
+        }
+        @keyframes popUp { 0% { transform: translate(-50%, 50px) scale(0); opacity: 0;} 100% { transform: translate(-50%, 0) scale(1); opacity: 1;} }
+
+        /* QR CODE MODAL */
+        .qr-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+            display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 100;
+        }
+        .qr-box { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 5px solid var(--primary-glow);}
         
         #canvas { display: none; }
     </style>
 </head>
-<body>
+<body class="theme-dark">
 
     <div class="bg-slider"></div>
     <div class="grid-overlay"></div>
+    
+    <div class="particles" id="particlesContainer"></div>
 
     <div class="top-bar">
-        <div>LIVE STUDIO</div>
-        <div id="realtimeClock" class="clock-display">--:--:--</div>
+        <div>LIVE STUDIO APP</div>
+        <div id="realtimeClock">--:--:--</div>
     </div>
 
     <div class="footer-brand">
-        STREETWEAR STUDIO V1.0 // YUKI APPAREL PH
+        POWERED BY YUKI APPAREL PH // SYSTEM V5.0
     </div>
 
     <div id="introScreen" class="screen active">
         <h1 class="brand-title">PRIME DUO<span>PHOTOBOOTH</span></h1>
+        
+        <div style="margin-bottom: 2rem; background: var(--panel-bg); padding: 15px 30px; border-radius: 50px; border: 1px solid var(--primary-glow); backdrop-filter: blur(5px);">
+            <label style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.8; margin-right: 10px;">EVENT THEME:</label>
+            <select onchange="document.body.className = this.value" style="background: transparent; border: none; color: var(--text-color); font-size: 1.2rem; font-weight: 800; cursor: pointer; outline: none; text-transform: uppercase;">
+                <option value="theme-dark">Dark / Edgy (Default)</option>
+                <option value="theme-wedding">Wedding / Kasal</option>
+                <option value="theme-rock">Rock / Grunge</option>
+                <option value="theme-birthday">Birthday / Party</option>
+                <option value="theme-fiesta">Fiesta / Celebration</option>
+                <option value="theme-christening">Christening / Binyag</option>
+                <option value="theme-party">Neon Party / Club</option>
+            </select>
+        </div>
+
         <button class="action-btn" onclick="initCameraAndProceed()">Tap to Start</button>
     </div>
 
     <div id="setupScreen" class="screen">
         <h2>Select Your Border</h2>
-        <p class="subtitle">Choose an existing frame or upload a new transparent PNG.</p>
-        
-        <div class="gallery-container" id="frameGallery">
-            </div>
-
-        <button id="proceedBtn" class="action-btn" style="display: none;" onclick="goToBooth()">Proceed to Camera ➔</button>
+        <div class="gallery-container" id="frameGallery"></div>
+        <div style="display:flex; gap: 20px;">
+            <button class="action-btn" style="background: transparent; color: var(--text-color);" onclick="showScreen('introScreen')">🔙 Back</button>
+            <button id="proceedBtn" class="action-btn" style="display: none;" onclick="goToBooth()">Proceed to Camera ➔</button>
+        </div>
     </div>
 
     <div id="boothScreen" class="screen">
         <div class="booth-container">
             <div class="booth-controls">
-                <h1 style="font-size: 2.5rem; font-weight: 900; line-height: 1; margin-bottom: 10px;">PRIME</h1>
-                <p class="status-text" id="cameraStatus">Initializing...</p>
-                <p style="color: #aaa; margin-bottom: 20px; font-size: 0.9rem;">Flash triggers at zero. Strike your best pose.</p>
+                <h1 style="font-size: 2.5rem; font-weight: 900; line-height: 1; margin-bottom: 10px;">STUDIO</h1>
+                <p id="cameraStatus" style="color: var(--primary-glow); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px;">Initializing...</p>
+                <p style="opacity: 0.8; margin-bottom: 20px; font-size: 0.9rem;">Get ready to smile!</p>
                 
                 <button id="captureBtn" class="action-btn" style="width: 100%;">📷 Capture</button>
-                <button id="flipCamBtn" class="action-btn" style="background: transparent; color: #fff; border: 2px solid #555; display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
+                <button id="flipCamBtn" class="action-btn" style="background: transparent; color: var(--text-color); border-color: var(--text-color); margin-top: 10px; display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
+                
+                <button class="action-btn" style="background: transparent; color: #ff0040; border-color: #ff0040; margin-top: 20px;" onclick="startNewSession()">🔙 Back to Home</button>
             </div>
 
             <div class="camera-wrapper">
@@ -207,18 +208,33 @@
         <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 20px; text-transform: uppercase;">Review Shot</h2>
         <div class="preview-wrapper">
             <img id="previewImage" src="" alt="Captured Photo">
+            <div id="randomCompliment" class="random-compliment"></div> 
         </div>
         <div style="display: flex; gap: 20px;">
-            <button class="action-btn" style="background: transparent; color: #fff;" onclick="retakePhoto()">Retake</button>
-            <button class="action-btn" onclick="savePhoto()">Save Photo</button>
+            <button class="action-btn" style="background: transparent; color: var(--text-color);" onclick="retakePhoto()">Retake</button>
+            <button class="action-btn" onclick="showScreen('resultScreen')">Looks Good! ➔</button>
         </div>
     </div>
 
     <div id="resultScreen" class="screen">
-        <div style="font-size: 5rem; margin-bottom: 20px; text-shadow: 0 0 20px #00f0ff;">✦</div>
-        <h2 style="font-size: 3rem; font-weight: 900; margin-bottom: 10px;">SAVED.</h2>
-        <p style="color: #aaa; margin-bottom: 40px; font-size: 1.1rem;">High-resolution image secured in your local drive.</p>
-        <button class="action-btn" onclick="startNewSession()">New Session</button>
+        <div style="font-size: 4rem; margin-bottom: 10px; text-shadow: 0 0 20px var(--primary-glow);">✦</div>
+        <h2 style="font-size: 3rem; font-weight: 900; margin-bottom: 10px;">CHOOSE EXPORT</h2>
+        <p style="opacity: 0.8; margin-bottom: 30px; font-size: 1.1rem;">How would you like to save your photo?</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px; width: 300px; margin-bottom: 40px;">
+            <button class="action-btn" onclick="downloadJPG()">📥 Save as JPG</button>
+            <button class="action-btn" style="background: #e74c3c; border-color: #e74c3c; color: white;" onclick="exportPDF()">📄 Export to PDF</button>
+            <button class="action-btn" style="background: #27ae60; border-color: #27ae60; color: white;" onclick="generateQR()">📱 Show QR Code</button>
+        </div>
+        
+        <button class="action-btn" style="background: transparent; color: var(--text-color);" onclick="startNewSession()">🔄 Done / New Session</button>
+    </div>
+
+    <div class="qr-modal" id="qrModal">
+        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 20px;">SCAN TO DOWNLOAD</h2>
+        <div class="qr-box" id="qrCodeContainer"></div>
+        <p style="margin-top: 10px; color: #ccc;">(Ready for Firebase Integration)</p>
+        <button class="action-btn" style="margin-top: 20px; background: transparent; color: #fff;" onclick="document.getElementById('qrModal').style.display='none'">Close</button>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -228,106 +244,101 @@
         const video = document.getElementById('video');
         const frameOverlay = document.getElementById('frameOverlay');
         const captureBtn = document.getElementById('captureBtn');
-        const flipCamBtn = document.getElementById('flipCamBtn');
         const countdownEl = document.getElementById('countdown');
         const flashEffect = document.getElementById('flashEffect');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const cameraStatus = document.getElementById('cameraStatus');
-        const proceedBtn = document.getElementById('proceedBtn');
         const previewImage = document.getElementById('previewImage');
         const frameGallery = document.getElementById('frameGallery');
         const realtimeClock = document.getElementById('realtimeClock');
+        const randomCompliment = document.getElementById('randomCompliment');
 
-        // State Variables
         let uploadedFrameData = null; 
         let isNikonConnected = false;
         let mobileFacingMode = 'environment';
         let currentStream = null;
         let finalDataURL = null;
-
-        // Load frames from LocalStorage (Limit to 5 to avoid QuotaExceededError)
         let savedFramesHistory = JSON.parse(localStorage.getItem('yukiFramesHistory')) || [];
 
         // -----------------------------------------
-        // REAL-TIME CLOCK LOGIC
+        // BACKGROUND PARTICLES GENERATOR
         // -----------------------------------------
-        function updateClock() {
-            const now = new Date();
-            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            realtimeClock.innerText = now.toLocaleString('en-US', options).toUpperCase();
+        const particlesContainer = document.getElementById('particlesContainer');
+        for(let i=0; i<20; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.width = Math.random() * 20 + 5 + 'px';
+            p.style.height = p.style.width;
+            p.style.animationDuration = Math.random() * 5 + 5 + 's';
+            p.style.animationDelay = Math.random() * 5 + 's';
+            particlesContainer.appendChild(p);
         }
-        setInterval(updateClock, 1000);
-        updateClock();
 
         // -----------------------------------------
-        // UI & NAVIGATION LOGIC
+        // CLOCK & SCREEN MANAGER
         // -----------------------------------------
+        setInterval(() => {
+            const now = new Date();
+            realtimeClock.innerText = now.toLocaleString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).toUpperCase();
+        }, 1000);
+
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
 
-        async function initCameraAndProceed() {
+        function initCameraAndProceed() {
             renderGallery();
             showScreen('setupScreen');
         }
 
+        function startNewSession() {
+            finalDataURL = null;
+            document.getElementById('proceedBtn').style.display = 'none';
+            showScreen('introScreen');
+        }
+
         // -----------------------------------------
-        // GALLERY & FRAME HISTORY LOGIC
+        // GALLERY & FRAME AUTO-FIT LOGIC
         // -----------------------------------------
         function renderGallery() {
             frameGallery.innerHTML = '';
-
-            // 1. "No Border" Card
             const noBorderCard = document.createElement('div');
             noBorderCard.className = `gallery-card ${uploadedFrameData === null ? 'selected' : ''}`;
             noBorderCard.onclick = () => selectBorder(null);
-            noBorderCard.innerHTML = `<div class="icon">⊘</div><div class="upload-label">No Border</div>`;
+            noBorderCard.innerHTML = `<div style="font-size:2rem;">⊘</div><div style="font-size:0.8rem; font-weight:800; margin-top:10px;">No Border</div>`;
             frameGallery.appendChild(noBorderCard);
 
-            // 2. Render Saved Frames
             savedFramesHistory.forEach((frameBase64, index) => {
                 const card = document.createElement('div');
                 card.className = `gallery-card ${uploadedFrameData === frameBase64 ? 'selected' : ''}`;
                 card.onclick = () => selectBorder(frameBase64);
                 
-                // Frame Image Preview
                 const preview = document.createElement('div');
                 preview.className = 'frame-preview';
                 preview.style.backgroundImage = `url('${frameBase64}')`;
                 card.appendChild(preview);
 
-                // Delete Button
                 const delBtn = document.createElement('button');
                 delBtn.className = 'delete-btn';
                 delBtn.innerHTML = '✖';
-                delBtn.onclick = (e) => {
-                    e.stopPropagation(); // Prevent card selection on delete
-                    deleteFrame(index);
-                };
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteFrame(index); };
                 card.appendChild(delBtn);
-
                 frameGallery.appendChild(card);
             });
 
-            // 3. "Upload New" Card
             const uploadCard = document.createElement('label');
             uploadCard.className = 'gallery-card';
-            uploadCard.innerHTML = `
-                <div class="icon">＋</div>
-                <div class="upload-label">Upload PNG</div>
-                <input type="file" id="dynamicUpload" accept="image/png">
-            `;
-            // Upload Listener
+            uploadCard.innerHTML = `<div style="font-size:2rem;">＋</div><div style="font-size:0.8rem; font-weight:800; margin-top:10px;">Upload PNG</div><input type="file" accept="image/png">`;
             uploadCard.querySelector('input').addEventListener('change', handleNewUpload);
             frameGallery.appendChild(uploadCard);
         }
 
         function selectBorder(dataStr) {
             uploadedFrameData = dataStr;
-            renderGallery(); // Re-render to update the "selected" glowing border
-            proceedBtn.style.display = 'block';
+            renderGallery(); 
+            document.getElementById('proceedBtn').style.display = 'block';
         }
 
         function handleNewUpload(e) {
@@ -336,21 +347,9 @@
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const base64 = event.target.result;
-                    
-                    // Add to history array (Max 5 items to protect localStorage limits)
-                    if (savedFramesHistory.length >= 5) {
-                        savedFramesHistory.shift(); // Remove oldest
-                    }
+                    if (savedFramesHistory.length >= 5) savedFramesHistory.shift(); 
                     savedFramesHistory.push(base64);
-                    
-                    try {
-                        localStorage.setItem('yukiFramesHistory', JSON.stringify(savedFramesHistory));
-                    } catch (e) {
-                        alert("Storage limit reached! Please delete old frames first.");
-                        savedFramesHistory.pop(); // Revert
-                        return;
-                    }
-
+                    try { localStorage.setItem('yukiFramesHistory', JSON.stringify(savedFramesHistory)); } catch (e) { alert("Storage full! Delete old frames."); savedFramesHistory.pop(); return; }
                     selectBorder(base64);
                 };
                 reader.readAsDataURL(file);
@@ -358,11 +357,8 @@
         }
 
         function deleteFrame(index) {
-            if(confirm("Delete this frame from history?")) {
-                // If deleting the currently selected frame, revert to "No Border"
-                if (uploadedFrameData === savedFramesHistory[index]) {
-                    uploadedFrameData = null;
-                }
+            if(confirm("Delete this frame?")) {
+                if (uploadedFrameData === savedFramesHistory[index]) uploadedFrameData = null;
                 savedFramesHistory.splice(index, 1);
                 localStorage.setItem('yukiFramesHistory', JSON.stringify(savedFramesHistory));
                 renderGallery();
@@ -370,10 +366,9 @@
         }
 
         // -----------------------------------------
-        // CAMERA LOGIC
+        // CAMERA LOGIC (WIDER 3:4 RATIO)
         // -----------------------------------------
         async function goToBooth() {
-            // Apply selected frame to the live preview
             frameOverlay.style.backgroundImage = uploadedFrameData ? `url('${uploadedFrameData}')` : 'none';
             showScreen('boothScreen');
             await startCameraStream();
@@ -381,16 +376,13 @@
 
         async function startCameraStream() {
             if (currentStream) currentStream.getTracks().forEach(track => track.stop());
-
             try {
                 const streamConfig = await navigator.mediaDevices.getUserMedia({ video: true });
                 const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                
                 let selectedDeviceId = null;
                 isNikonConnected = false;
 
-                for (let device of videoDevices) {
+                for (let device of devices.filter(d => d.kind === 'videoinput')) {
                     const label = device.label.toLowerCase();
                     if (label.includes('usb') || label.includes('nikon') || label.includes('capture')) {
                         selectedDeviceId = device.deviceId;
@@ -401,28 +393,20 @@
 
                 let constraints = {};
                 if (isNikonConnected) {
-                    cameraStatus.innerText = "PRO MODE // NIKON DSLR";
-                    cameraStatus.style.color = "#00f0ff";
-                    flipCamBtn.style.display = 'none';
+                    document.getElementById('cameraStatus').innerText = "PRO MODE // NIKON";
+                    document.getElementById('flipCamBtn').style.display = 'none';
                     video.classList.remove('no-mirror');
                     constraints = { video: { deviceId: { exact: selectedDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
                 } else {
-                    cameraStatus.innerText = `MOBILE // ${mobileFacingMode === 'user' ? 'FRONT' : 'BACK'} CAM`;
-                    cameraStatus.style.color = "#ffaa00";
-                    flipCamBtn.style.display = 'block';
-                    
+                    document.getElementById('cameraStatus').innerText = `MOBILE // ${mobileFacingMode.toUpperCase()} CAM`;
+                    document.getElementById('flipCamBtn').style.display = 'block';
                     if (mobileFacingMode === 'environment') video.classList.add('no-mirror');
                     else video.classList.remove('no-mirror');
-                    
                     constraints = { video: { facingMode: mobileFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } } };
                 }
-
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = currentStream;
-
-            } catch (err) {
-                alert("Camera access is required.");
-            }
+            } catch (err) { alert("Camera access required."); }
         }
 
         function flipCamera() {
@@ -431,23 +415,20 @@
         }
 
         // -----------------------------------------
-        // TIMER, FLASH & CAPTURE
+        // CAPTURE & RANDOM EMOJI
         // -----------------------------------------
         captureBtn.addEventListener('click', () => {
             captureBtn.disabled = true;
             let timeLeft = 5;
-
             countdownEl.style.display = 'block';
             countdownEl.innerText = timeLeft;
 
             const timerInterval = setInterval(() => {
                 timeLeft--;
-                if (timeLeft > 0) {
-                    countdownEl.innerText = timeLeft;
-                } else {
+                if (timeLeft > 0) countdownEl.innerText = timeLeft;
+                else {
                     clearInterval(timerInterval);
                     countdownEl.style.display = 'none';
-                    
                     if (isNikonConnected) triggerNodeJSCamera();
                     else triggerMobileCapture();
                 }
@@ -460,43 +441,38 @@
                 const data = await response.json();
                 if (data.success) playFlashAndProcess(500);
                 else playFlashAndProcess(0);
-            } catch (error) {
-                playFlashAndProcess(0);
-            }
+            } catch (error) { playFlashAndProcess(0); }
         }
 
         async function triggerMobileCapture() {
             let track = currentStream ? currentStream.getVideoTracks()[0] : null;
-            if (track) {
-                try {
-                    const capabilities = track.getCapabilities();
-                    if (capabilities.torch) await track.applyConstraints({ advanced: [{ torch: true }] });
-                } catch (e) { }
-            }
-
+            if (track) { try { const capabilities = track.getCapabilities(); if (capabilities.torch) await track.applyConstraints({ advanced: [{ torch: true }] }); } catch (e) { } }
             playFlashAndProcess(500);
-
-            setTimeout(async () => {
-                if (track) {
-                    try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e){}
-                }
-            }, 1500);
+            setTimeout(async () => { if (track) { try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e){} } }, 1500);
         }
 
         function playFlashAndProcess(delay) {
             flashEffect.classList.remove('active');
             void flashEffect.offsetWidth; 
             flashEffect.classList.add('active');
-
             setTimeout(() => { generateImagePreview(); }, delay);
         }
 
         function generateImagePreview() {
-            const targetRatio = 9 / 16;
+            // WIDER ASPECT RATIO FOR CROPPING (3/4)
+            const targetRatio = 3 / 4; 
             let srcWidth = video.videoWidth;
             let srcHeight = video.videoHeight;
             let drawWidth = srcHeight * targetRatio;
+            
+            // Just in case screen is exceptionally wide, adjust calculation
+            if(drawWidth > srcWidth) {
+                drawWidth = srcWidth;
+                srcHeight = srcWidth / targetRatio;
+            }
+            
             let startX = (srcWidth - drawWidth) / 2;
+            let startY = (video.videoHeight - srcHeight) / 2;
 
             canvas.width = drawWidth;
             canvas.height = srcHeight;
@@ -506,12 +482,13 @@
                 ctx.scale(-1, 1);
             }
             
-            ctx.drawImage(video, startX, 0, drawWidth, srcHeight, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, startX, startY, drawWidth, srcHeight, 0, 0, canvas.width, canvas.height);
             ctx.setTransform(1, 0, 0, 1, 0, 0);
 
             if (uploadedFrameData) {
                 const img = new Image();
                 img.onload = () => {
+                    // AUTO FIT EXACTLY TO CANVAS (100% 100%)
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     showPreview();
                 };
@@ -521,12 +498,14 @@
             }
         }
 
-        // -----------------------------------------
-        // PREVIEW, SAVE & RESTART
-        // -----------------------------------------
         function showPreview() {
             finalDataURL = canvas.toDataURL('image/jpeg', 1.0);
             previewImage.src = finalDataURL;
+            
+            // RANDOM EMOJI COMPLIMENT
+            const compliments = ["Yuki Style! 🔥", "Perfect Smile! 😄", "Stunning! ✨", "Awesome Look! 📸", "So Fresh! ❄️", "Drip Too Hard! 💧"];
+            randomCompliment.innerText = compliments[Math.floor(Math.random() * compliments.length)];
+            
             showScreen('previewScreen');
             captureBtn.disabled = false;
         }
@@ -536,25 +515,55 @@
             showScreen('boothScreen');
         }
 
-        function savePhoto() {
-            const link = document.createElement('a');
-            // Adding date to the filename
+        // -----------------------------------------
+        // EXPORT OPTIONS (JPG, PDF, QR)
+        // -----------------------------------------
+        function getFileName() {
             const dateStr = new Date().toISOString().split('T')[0];
-            link.download = `PrimeDuo_${dateStr}_${new Date().getTime()}.jpg`;
+            return `YukiBooth_${dateStr}_${new Date().getTime()}`;
+        }
+
+        function downloadJPG() {
+            const link = document.createElement('a');
+            link.download = getFileName() + ".jpg";
             link.href = finalDataURL;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            showScreen('resultScreen');
         }
 
-        function startNewSession() {
-            finalDataURL = null;
-            proceedBtn.style.display = 'none';
-            // Start over at setup page and show the gallery
-            initCameraAndProceed(); 
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgProps = pdf.getImageProperties(finalDataURL);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            // Calculate height keeping aspect ratio 3:4
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            
+            pdf.addImage(finalDataURL, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(getFileName() + ".pdf");
         }
+
+        function generateQR() {
+            const qrContainer = document.getElementById('qrCodeContainer');
+            qrContainer.innerHTML = ""; // Clear old QR
+            
+            // DITO PAPASOK ANG FIREBASE LOGIC MO
+            // Halimbawa: const downloadLink = await uploadToFirebase(finalDataURL);
+            const placeholderLink = "https://yuki-apparel.firebaseapp.com/gallery/" + new Date().getTime(); 
+
+            new QRCode(qrContainer, {
+                text: placeholderLink,
+                width: 250,
+                height: 250,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            document.getElementById('qrModal').style.display = 'flex';
+        }
+
     </script>
 </body>
 </html>
