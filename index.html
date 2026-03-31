@@ -62,11 +62,38 @@
         .action-btn:hover:not(:disabled) { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px var(--secondary-glow); }
         .action-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; border-color: #555; background: #333; color: #888;}
 
+        /* BOOKING INFO BLOCK */
+        .booking-info {
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-glow);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            margin-top: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            max-width: 500px;
+        }
+        .booking-info h3 { font-size: 1rem; font-weight: 900; color: var(--primary-glow); letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase; }
+        .booking-info p { font-size: 0.85rem; opacity: 0.9; margin-bottom: 5px; font-weight: 500; }
+        .booking-info .contact-details { font-weight: 800; font-size: 0.95rem; color: #fff; margin-top: 10px; }
+
         /* -----------------------------------------
-           ADMIN PANEL (HIDDEN)
+           ADMIN PANEL (HIDDEN - MOVED ICON TO BOTTOM RIGHT)
         ------------------------------------------ */
-        .admin-trigger { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; cursor: pointer; z-index: 100; opacity: 0.3; transition: 0.3s; pointer-events: auto;}
-        .admin-trigger:hover { opacity: 1; }
+        .admin-trigger { 
+            position: absolute; 
+            bottom: 25px; /* Inilipat sa ibaba */
+            right: 25px;  /* Inilipat sa kanan */
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            z-index: 1000; /* Mataas na z-index para laging na-ki-click */
+            opacity: 0.3; 
+            transition: 0.3s; 
+            pointer-events: auto;
+        }
+        .admin-trigger:hover { opacity: 1; transform: rotate(90deg); }
+        
         .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; color: #fff; padding: 40px; border-radius: 16px; border: 2px solid var(--primary-glow); z-index: 1000; display: none; flex-direction: column; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); width: 400px;}
         .admin-panel h2 { margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px;}
         .admin-group { display: flex; flex-direction: column; gap: 5px; }
@@ -130,7 +157,7 @@
         <div id="realtimeClock">--:--:--</div>
     </div>
     
-    <div class="admin-trigger" onclick="toggleAdmin()">⚙️</div>
+    <div class="admin-trigger" onclick="toggleAdmin()" title="Admin Settings">⚙️</div>
 
     <div class="admin-overlay" id="adminOverlay" onclick="toggleAdmin()"></div>
     <div class="admin-panel" id="adminPanel">
@@ -163,12 +190,22 @@
     </div>
 
     <div class="footer-brand">
-        POWERED BY YUKI APPAREL PH // SYSTEM V6.0 (FIREBASE CLOUD)
+        POWERED BY YUKI APPAREL PH // SYSTEM V6.1
     </div>
 
     <div id="introScreen" class="screen active">
         <h1 class="brand-title">PRIME DUO<span>PHOTOBOOTH</span></h1>
         <button class="action-btn" onclick="initCameraAndProceed()">Tap to Start</button>
+
+        <div class="booking-info">
+            <h3>Book This Photobooth!</h3>
+            <p>Make your next event unforgettable.</p>
+            <div class="contact-details">
+                FB/TikTok: @YukiApparelPh<br>
+                Contact: Ms. Edralene Balase<br>
+                📞 [Your Number]
+            </div>
+        </div>
     </div>
 
     <div id="setupScreen" class="screen">
@@ -228,13 +265,22 @@
         <h2 style="font-size: 3rem; font-weight: 900; margin-bottom: 10px;">CHOOSE EXPORT</h2>
         <p style="opacity: 0.8; margin-bottom: 30px; font-size: 1.1rem;">How would you like to save your photo?</p>
         
-        <div style="display: flex; flex-direction: column; gap: 15px; width: 300px; margin-bottom: 40px;">
+        <div style="display: flex; flex-direction: column; gap: 15px; width: 300px; margin-bottom: 30px;">
             <button class="action-btn" onclick="downloadJPG()">📥 Save as JPG</button>
             <button class="action-btn" style="background: #e74c3c; border-color: #e74c3c; color: white;" onclick="exportPDF()">📄 Export to PDF</button>
             <button class="action-btn" style="background: #27ae60; border-color: #27ae60; color: white;" onclick="generateQR()">📱 Show QR Code</button>
         </div>
         
         <button class="action-btn" style="background: transparent; color: var(--text-color);" onclick="startNewSession()">🔄 Done / New Session</button>
+
+        <div class="booking-info">
+            <h3>Rent Our Booth!</h3>
+            <p>Make your next party awesome.</p>
+            <div class="contact-details">
+                Contact: Ms. Edralene Balase<br>
+                FB/TikTok: @YukiApparelPh | 📞 [Your Number]
+            </div>
+        </div>
     </div>
 
     <div class="qr-modal" id="qrModal">
@@ -707,31 +753,22 @@
             pdf.save(getFileName() + ".pdf");
         }
 
-        // FIREBASE CLOUD STORAGE UPLOAD FOR QR CODE
         async function generateQR() {
             if(!finalDataURL) return;
             
             const qrContainer = document.getElementById('qrCodeContainer');
             const modal = document.getElementById('qrModal');
             
-            // Show Loading State
             qrContainer.innerHTML = `<div id="qrLoadingText" style="color: #000; font-weight: 800; font-size: 1.2rem; text-align: center;">Uploading to Cloud...<br>Please wait ⏳</div>`;
             modal.style.display = 'flex';
 
             try {
-                // Create a unique filename
                 const imageId = 'yuki_photo_' + new Date().getTime() + '.jpg';
-                
-                // Point to 'gallery' folder in Firebase Storage
                 const storageRef = storage.ref('gallery/' + imageId);
                 
-                // Upload the base64 string
                 await storageRef.putString(finalDataURL, 'data_url');
-                
-                // Get the public download URL directly to the image
                 const downloadURL = await storageRef.getDownloadURL();
 
-                // Clear loading text and generate QR with the Firebase URL
                 qrContainer.innerHTML = ""; 
                 new QRCode(qrContainer, {
                     text: downloadURL,
