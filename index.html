@@ -846,7 +846,11 @@
         function generateImagePreview() {
             const vidW = video.videoWidth || 1080;
             const vidH = video.videoHeight || 1440;
-            const targetRatio = customRatioWidth / customRatioHeight; 
+            
+            // FIX: Kukunin na ngayon yung saktong size ng box mo sa screen bago mag-crop
+            // para 100% "What You See Is What You Get"
+            const container = document.getElementById('cameraWrapper');
+            const targetRatio = container.clientWidth / container.clientHeight; 
             
             let drawWidth = vidW;
             let drawHeight = vidW / targetRatio;
