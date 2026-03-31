@@ -33,12 +33,13 @@
         body.theme-fiesta { --primary-glow: #ff4500; --secondary-glow: #ffd700; --bg-overlay: rgba(0, 0, 0, 0.5); --bg-image: url('https://images.unsplash.com/photo-1511556532299-8f662fc26c06?q=80&w=2070&auto=format&fit=crop'); --bg-filter: saturate(200%); --text-color: #fff; --panel-bg: rgba(0, 0, 0, 0.7); }
         body.theme-christening { --primary-glow: #87ceeb; --secondary-glow: #ffb6c1; --bg-overlay: rgba(255, 255, 255, 0.5); --bg-image: url('https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=2070&auto=format&fit=crop'); --bg-filter: brightness(110%) blur(2px); --text-color: #444; --panel-bg: rgba(255, 255, 255, 0.9); }
         body.theme-party { --primary-glow: #ff00ff; --secondary-glow: #00ff00; --bg-overlay: rgba(10, 0, 20, 0.7); --bg-image: url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=2070&auto=format&fit=crop'); --bg-filter: saturate(200%) contrast(120%); --text-color: #fff; --panel-bg: rgba(15, 0, 30, 0.8); }
+        body.theme-horror { --primary-glow: #ff0000; --secondary-glow: #4a0000; --bg-overlay: rgba(5, 0, 0, 0.9); --bg-image: url('https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=2070&auto=format&fit=crop'); --bg-filter: contrast(150%) grayscale(30%); --text-color: #ffcccc; --panel-bg: rgba(20, 0, 0, 0.85); }
 
         /* -----------------------------------------
            RESET & GLOBALS
         ------------------------------------------ */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        body { background: #000; color: var(--text-color); overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; transition: color 0.5s ease; }
+        body { background: #000; color: var(--text-color); overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; width: 100vw; transition: color 0.5s ease; }
 
         /* -----------------------------------------
            DYNAMIC BACKGROUND & PARTICLES
@@ -62,6 +63,21 @@
         .action-btn:hover:not(:disabled) { transform: translate(-3px, -3px); box-shadow: 8px 8px 0px var(--secondary-glow); }
         .action-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; border-color: #555; background: #333; color: #888;}
 
+        /* DROPDOWN SELECT STYLING FIX */
+        select {
+            background: rgba(0, 0, 0, 0.8) !important;
+            color: #ffffff !important;
+            border: 2px solid var(--primary-glow) !important;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            outline: none;
+            text-transform: uppercase;
+        }
+        select option { background: #111 !important; color: #fff !important; }
+
         /* BOOKING INFO BLOCK */
         .booking-info {
             background: var(--panel-bg);
@@ -73,40 +89,34 @@
             margin-top: 30px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
             max-width: 500px;
+            color: var(--text-color);
         }
         .booking-info h3 { font-size: 1rem; font-weight: 900; color: var(--primary-glow); letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase; }
         .booking-info p { font-size: 0.85rem; opacity: 0.9; margin-bottom: 5px; font-weight: 500; }
-        .booking-info .contact-details { font-weight: 800; font-size: 0.95rem; color: #fff; margin-top: 10px; }
+        .booking-info .contact-details { font-weight: 800; font-size: 0.95rem; color: var(--text-color); margin-top: 10px; }
 
         /* -----------------------------------------
-           ADMIN PANEL (HIDDEN - MOVED ICON TO BOTTOM RIGHT)
+           ADMIN PANEL (VISIBLE GEAR AT BOTTOM)
         ------------------------------------------ */
         .admin-trigger { 
-            position: absolute; 
-            bottom: 25px; /* Inilipat sa ibaba */
-            right: 25px;  /* Inilipat sa kanan */
-            font-size: 1.5rem; 
-            cursor: pointer; 
-            z-index: 1000; /* Mataas na z-index para laging na-ki-click */
-            opacity: 0.3; 
-            transition: 0.3s; 
-            pointer-events: auto;
+            position: absolute; bottom: 20px; right: 20px; font-size: 1.5rem; cursor: pointer; z-index: 1000;
+            opacity: 0.8; transition: 0.3s; pointer-events: auto;
+            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 50%; border: 1px solid var(--primary-glow);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-        .admin-trigger:hover { opacity: 1; transform: rotate(90deg); }
-        
-        .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; color: #fff; padding: 40px; border-radius: 16px; border: 2px solid var(--primary-glow); z-index: 1000; display: none; flex-direction: column; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); width: 400px;}
+        .admin-trigger:hover { opacity: 1; transform: rotate(90deg) scale(1.1); }
+        .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; color: #fff; padding: 40px; border-radius: 16px; border: 2px solid var(--primary-glow); z-index: 1000; display: none; flex-direction: column; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); width: 400px; max-width: 90vw;}
         .admin-panel h2 { margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px;}
         .admin-group { display: flex; flex-direction: column; gap: 5px; }
         .admin-group label { font-size: 0.8rem; letter-spacing: 1px; color: #aaa; }
-        .admin-group input, .admin-group select { padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-weight: bold;}
-        .admin-group select option { background: #222; color: #fff; } 
+        .admin-group input { padding: 10px; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-weight: bold;}
         .admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; }
 
         /* -----------------------------------------
            SETUP SCREEN & GALLERY
         ------------------------------------------ */
-        .gallery-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1000px; margin-bottom: 40px; padding: 20px; background: var(--panel-bg); border: 1px solid var(--primary-glow); backdrop-filter: blur(10px); border-radius: 16px; }
-        .gallery-card { width: 140px; height: 186px; background: rgba(0,0,0,0.5); border: 2px solid transparent; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; text-align: center; color: #fff; overflow: hidden; }
+        .gallery-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1000px; margin-bottom: 40px; padding: 20px; background: var(--panel-bg); border: 1px solid var(--primary-glow); backdrop-filter: blur(10px); border-radius: 16px; max-height: 50vh; overflow-y: auto;}
+        .gallery-card { width: 120px; height: 160px; background: rgba(0,0,0,0.5); border: 2px solid transparent; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; text-align: center; color: #fff; overflow: hidden; flex-shrink: 0;}
         .gallery-card:hover { border-color: var(--text-color); transform: translateY(-5px); }
         .gallery-card.selected { border-color: var(--primary-glow); box-shadow: 0 0 20px var(--primary-glow); }
         .frame-preview { width: 100%; height: 100%; background-size: 100% 100%; background-position: center; background-repeat: no-repeat; pointer-events: none; }
@@ -114,12 +124,11 @@
         input[type="file"] { display: none; }
 
         /* -----------------------------------------
-           MASTER CAMERA & PREVIEW BOX
+           MASTER CAMERA & PREVIEW BOX (RESPONSIVE)
         ------------------------------------------ */
         .view-box { position: relative; height: 70vh; width: auto; max-width: 90vw; aspect-ratio: var(--cam-ratio); background: #000; border: 4px solid var(--primary-glow); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; transition: aspect-ratio 0.3s ease; margin: 0 auto; flex-shrink: 0; }
-
         .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1400px; padding: 20px; justify-content: center;}
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: transform 0.3s; }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         video.no-mirror { transform: scaleX(1); } 
 
         #frameOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;}
@@ -130,20 +139,38 @@
         .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; opacity: 0; z-index: 20; pointer-events: none; }
         .flash.active { animation: flashAnim 0.8s ease-out; }
         @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
-        .booth-controls { display: flex; flex-direction: column; gap: 15px; width: 300px; background: var(--panel-bg); padding: 30px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid var(--primary-glow); flex-shrink: 0;}
         
+        .booth-controls { display: flex; flex-direction: column; gap: 10px; width: 300px; background: var(--panel-bg); padding: 20px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid var(--primary-glow); flex-shrink: 0;}
         input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--primary-glow); cursor: pointer; margin-top: -8px; box-shadow: 0 0 10px var(--primary-glow);}
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #555; border-radius: 5px; }
 
         #previewImage { width: 100%; height: 100%; object-fit: contain; } 
-        .random-compliment { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 1.5rem; font-weight: 800; border: 2px solid var(--primary-glow); white-space: nowrap; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 20; }
+        .random-compliment { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 1.5rem; font-weight: 800; border: 2px solid var(--primary-glow); white-space: nowrap; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 20; }
         @keyframes popUp { 0% { transform: translate(-50%, 50px) scale(0); opacity: 0;} 100% { transform: translate(-50%, 0) scale(1); opacity: 1;} }
         
-        .qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 100; }
-        .qr-box { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 5px solid var(--primary-glow); display: flex; align-items: center; justify-content: center; min-width: 290px; min-height: 290px;}
+        .qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 100; padding: 20px; text-align: center;}
+        .qr-box { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 5px solid var(--primary-glow); display: flex; align-items: center; justify-content: center; min-width: 250px; min-height: 250px;}
         
         #canvas { display: none; }
+
+        /* READY HYPE ANIMATION */
+        .hype-text { font-size: 6rem; font-weight: 900; color: var(--primary-glow); text-transform: uppercase; animation: zoomInHype 1.5s ease-in-out; text-shadow: 0 0 30px var(--primary-glow); text-align: center;}
+        @keyframes zoomInHype { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* -----------------------------------------
+           MOBILE RESPONSIVENESS
+        ------------------------------------------ */
+        @media (max-width: 800px) {
+            .brand-title { font-size: 3.5rem; }
+            .brand-title span { font-size: 1.2rem; }
+            .booth-container { flex-direction: column-reverse; gap: 20px; padding: 10px; height: 100%; overflow-y: auto;}
+            .view-box { max-height: 55vh; }
+            .booth-controls { width: 100%; max-width: 400px; padding: 15px; }
+            .top-bar { font-size: 0.8rem; top: 10px; left: 15px; right: 15px; }
+            .admin-trigger { bottom: 10px; right: 10px; font-size: 1.2rem; padding: 8px;}
+            .hype-text { font-size: 3rem; }
+        }
     </style>
 </head>
 <body class="theme-dark">
@@ -162,7 +189,6 @@
     <div class="admin-overlay" id="adminOverlay" onclick="toggleAdmin()"></div>
     <div class="admin-panel" id="adminPanel">
         <h2>Admin Settings</h2>
-        
         <div class="admin-group">
             <label>Event Theme:</label>
             <select id="adminThemeSelect" onchange="document.body.className = this.value">
@@ -173,24 +199,22 @@
                 <option value="theme-fiesta">Fiesta / Celebration</option>
                 <option value="theme-christening">Christening / Binyag</option>
                 <option value="theme-party">Neon Party / Club</option>
+                <option value="theme-horror">Horror Party / Creepy</option>
             </select>
         </div>
-
         <div class="admin-group">
             <label>Camera Width (Ratio/Pixels):</label>
             <input type="number" id="camWidth" value="3" oninput="updateCameraRatioLive()">
         </div>
-
         <div class="admin-group">
             <label>Camera Height (Ratio/Pixels):</label>
             <input type="number" id="camHeight" value="4" oninput="updateCameraRatioLive()">
         </div>
-
         <button class="action-btn" style="width: 100%; margin-top: 10px;" onclick="toggleAdmin()">Close Panel</button>
     </div>
 
     <div class="footer-brand">
-        POWERED BY YUKI APPAREL PH // SYSTEM V6.1
+        POWERED BY YUKI APPAREL PH // SYSTEM V6.2 RESPONSIVE
     </div>
 
     <div id="introScreen" class="screen active">
@@ -209,32 +233,36 @@
     </div>
 
     <div id="setupScreen" class="screen">
-        <h2>Select Your Border</h2>
+        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; text-transform: uppercase;">Select Border</h2>
         <div class="gallery-container" id="frameGallery"></div>
         <div style="display:flex; gap: 20px;">
             <button class="action-btn" style="background: transparent; color: var(--text-color);" onclick="showScreen('introScreen')">🔙 Back</button>
-            <button id="proceedBtn" class="action-btn" style="display: none;" onclick="goToBooth()">Proceed to Camera ➔</button>
+            <button id="proceedBtn" class="action-btn" style="display: none;" onclick="triggerReadyScreen()">Proceed ➔</button>
         </div>
+    </div>
+
+    <div id="readyScreen" class="screen">
+        <h1 class="hype-text">ARE YOU READY?</h1>
+        <p style="font-size: 1.2rem; font-weight: bold; margin-top: 10px;">Strike your best pose!</p>
     </div>
 
     <div id="boothScreen" class="screen">
         <div class="booth-container">
             <div class="booth-controls">
-                <h1 style="font-size: 2.5rem; font-weight: 900; line-height: 1; margin-bottom: 10px;">STUDIO</h1>
-                <p id="cameraStatus" style="color: var(--primary-glow); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px;">INITIALIZING...</p>
-                <p style="opacity: 0.8; margin-bottom: 10px; font-size: 0.9rem;">Please wait for camera...</p>
+                <h1 style="font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 5px;">STUDIO</h1>
+                <p id="cameraStatus" style="color: var(--primary-glow); font-weight: 800; font-size: 0.8rem; text-transform: uppercase;">INITIALIZING...</p>
                 
-                <button id="captureBtn" class="action-btn" style="width: 100%;" disabled>📷 Capture</button>
-                <button id="flipCamBtn" class="action-btn" style="background: transparent; color: var(--text-color); border-color: var(--text-color); margin-top: 10px; display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
+                <button id="captureBtn" class="action-btn" style="width: 100%; margin-top: 10px;" disabled>📷 Capture</button>
+                <button id="flipCamBtn" class="action-btn" style="background: transparent; color: var(--text-color); border-color: var(--text-color); margin-top: 5px; display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
                 
-                <div id="frameControls" style="display: none; flex-direction: column; gap: 5px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
-                    <label style="font-size: 0.8rem; color: #aaa; font-weight: bold; text-align: center;">FRAME ZOOM</label>
+                <div id="frameControls" style="display: none; flex-direction: column; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #444;">
+                    <label style="font-size: 0.7rem; color: #aaa; font-weight: bold; text-align: center;">FRAME ZOOM</label>
                     <input type="range" id="frameSizeSlider" min="10" max="300" value="100">
-                    <button class="action-btn" style="padding: 10px; font-size: 0.8rem; margin-top: 5px; background: transparent; color: #fff;" onclick="resetFrame()">🔄 Auto Fit (Reset)</button>
-                    <p style="font-size: 0.7rem; color: var(--primary-glow); text-align: center; margin-top: 5px;">Drag frame on the screen to reposition.</p>
+                    <button class="action-btn" style="padding: 8px; font-size: 0.7rem; margin-top: 5px; background: transparent; color: #fff;" onclick="resetFrame()">🔄 Auto Fit (Reset)</button>
+                    <p style="font-size: 0.65rem; color: var(--primary-glow); text-align: center; margin-top: 5px;">Drag frame on the screen to reposition.</p>
                 </div>
 
-                <button class="action-btn" style="background: transparent; color: #ff0040; border-color: #ff0040; margin-top: 20px;" onclick="startNewSession()">🔙 Back to Home</button>
+                <button class="action-btn" style="background: transparent; color: #ff0040; border-color: #ff0040; margin-top: 15px;" onclick="startNewSession()">🔙 Home</button>
             </div>
 
             <div class="view-box" id="cameraWrapper">
@@ -249,33 +277,32 @@
     </div>
 
     <div id="previewScreen" class="screen">
-        <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 20px; text-transform: uppercase;">Review Shot</h2>
+        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; text-transform: uppercase;">Review Shot</h2>
         <div class="view-box" id="previewWrapper" style="margin-bottom: 20px;">
             <img id="previewImage" src="" alt="Captured Photo">
             <div id="randomCompliment" class="random-compliment"></div> 
         </div>
-        <div style="display: flex; gap: 20px;">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
             <button class="action-btn" style="background: transparent; color: var(--text-color);" onclick="retakePhoto()">Retake</button>
             <button class="action-btn" onclick="showScreen('resultScreen')">Looks Good! ➔</button>
         </div>
     </div>
 
     <div id="resultScreen" class="screen">
-        <div style="font-size: 4rem; margin-bottom: 10px; text-shadow: 0 0 20px var(--primary-glow);">✦</div>
-        <h2 style="font-size: 3rem; font-weight: 900; margin-bottom: 10px;">CHOOSE EXPORT</h2>
-        <p style="opacity: 0.8; margin-bottom: 30px; font-size: 1.1rem;">How would you like to save your photo?</p>
+        <div style="font-size: 3rem; margin-bottom: 10px; text-shadow: 0 0 20px var(--primary-glow);">✦</div>
+        <h2 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; text-align: center;">CHOOSE EXPORT</h2>
+        <p style="opacity: 0.8; margin-bottom: 20px; font-size: 1rem; text-align: center;">How would you like to save your photo?</p>
         
-        <div style="display: flex; flex-direction: column; gap: 15px; width: 300px; margin-bottom: 30px;">
+        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 300px; margin-bottom: 30px;">
             <button class="action-btn" onclick="downloadJPG()">📥 Save as JPG</button>
             <button class="action-btn" style="background: #e74c3c; border-color: #e74c3c; color: white;" onclick="exportPDF()">📄 Export to PDF</button>
             <button class="action-btn" style="background: #27ae60; border-color: #27ae60; color: white;" onclick="generateQR()">📱 Show QR Code</button>
         </div>
         
-        <button class="action-btn" style="background: transparent; color: var(--text-color);" onclick="startNewSession()">🔄 Done / New Session</button>
+        <button class="action-btn" style="background: transparent; color: var(--text-color);" onclick="startNewSession()">🔄 New Session</button>
 
-        <div class="booking-info">
+        <div class="booking-info" style="margin-top: 20px;">
             <h3>Rent Our Booth!</h3>
-            <p>Make your next party awesome.</p>
             <div class="contact-details">
                 Contact: Ms. Edralene Balase<br>
                 FB/TikTok: @YukiApparelPh | 📞 [Your Number]
@@ -285,7 +312,7 @@
 
     <div class="qr-modal" id="qrModal">
         <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: #fff;">SCAN TO DOWNLOAD</h2>
-        <p style="color: #aaa; margin-bottom: 20px; text-align: center;">Scan with your phone camera to download directly.</p>
+        <p style="color: #aaa; margin-bottom: 20px; text-align: center; font-size: 0.9rem;">Scan with your phone camera to download directly.</p>
         <div class="qr-box" id="qrCodeContainer">
             <div id="qrLoadingText" style="color: #000; font-weight: 800; font-size: 1.2rem; text-align: center;">Uploading...<br>Please wait ⏳</div>
         </div>
@@ -339,7 +366,6 @@
         let finalDataURL = null;
         let savedFramesHistory = JSON.parse(localStorage.getItem('yukiFramesHistory')) || [];
 
-        // FRAME MANIPULATION VARIABLES 
         let frameLeft = 0, frameTop = 0, frameWidth = 100, frameHeight = 100;
         let isDragging = false;
         let dragStartX, dragStartY, initialLeft, initialTop;
@@ -553,8 +579,13 @@
         document.addEventListener('touchend', dragEnd);
 
         // -----------------------------------------
-        // CAMERA SETUP & PROTECTION
+        // HYPE SCREEN & CAMERA SETUP
         // -----------------------------------------
+        function triggerReadyScreen() {
+            showScreen('readyScreen');
+            setTimeout(goToBooth, 2000); // Wait 2 seconds then show booth
+        }
+
         async function goToBooth() {
             showScreen('boothScreen');
             captureBtn.disabled = true; 
@@ -563,8 +594,7 @@
         }
 
         video.onloadedmetadata = () => {
-            document.getElementById('cameraStatus').innerText = isNikonConnected ? "PRO MODE // NIKON" : `MOBILE // ${mobileFacingMode.toUpperCase()} CAM`;
-            document.querySelector('.booth-controls p:nth-of-type(2)').innerText = "Get ready to smile!";
+            document.getElementById('cameraStatus').innerText = isNikonConnected ? "PRO MODE // NIKON" : `MOBILE // ${mobileFacingMode.toUpperCase()}`;
             captureBtn.disabled = false;
         };
 
@@ -781,7 +811,7 @@
 
             } catch (error) {
                 console.error("Firebase Upload Error:", error);
-                qrContainer.innerHTML = `<div style="color: red; font-weight: bold; text-align: center;">Upload Failed.<br>Check your Firebase Storage Rules.<br><span style="font-size:0.8rem; color:#555;">(Set to: allow read, write: if true;)</span></div>`;
+                qrContainer.innerHTML = `<div style="color: red; font-weight: bold; text-align: center;">Upload Failed.<br>Check your Firebase Storage Rules.</div>`;
             }
         }
 
