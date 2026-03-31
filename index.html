@@ -9,12 +9,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js"></script>
+
     <style>
         /* -----------------------------------------
            CSS VARIABLES FOR THEMING & RATIO
         ------------------------------------------ */
         :root {
-            --cam-ratio: 3 / 4; /* Master ratio control */
+            --cam-ratio: 3 / 4; 
             --primary-glow: #00f0ff;
             --secondary-glow: #ff0040;
             --bg-overlay: rgba(5, 5, 5, 0.85);
@@ -85,30 +88,13 @@
 
         /* -----------------------------------------
            MASTER CAMERA & PREVIEW BOX
-           (This ensures WYSIWYG sizes perfectly)
         ------------------------------------------ */
-        .view-box {
-            position: relative; 
-            height: 70vh; 
-            width: auto;  
-            max-width: 90vw; 
-            aspect-ratio: var(--cam-ratio); 
-            background: #000; 
-            border: 4px solid var(--primary-glow);
-            border-radius: 12px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            overflow: hidden;
-            transition: aspect-ratio 0.3s ease;
-            margin: 0 auto;
-            flex-shrink: 0;
-        }
+        .view-box { position: relative; height: 70vh; width: auto; max-width: 90vw; aspect-ratio: var(--cam-ratio); background: #000; border: 4px solid var(--primary-glow); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; transition: aspect-ratio 0.3s ease; margin: 0 auto; flex-shrink: 0; }
 
-        /* LIVE CAMERA SPECIFICS */
         .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1400px; padding: 20px; justify-content: center;}
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: transform 0.3s; }
         video.no-mirror { transform: scaleX(1); } 
 
-        /* INTERACTIVE FRAME STYLING */
         #frameOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;}
         #frameImage { position: absolute; top: 0%; left: 0%; width: 100%; height: 100%; object-fit: fill; pointer-events: auto; cursor: grab; display: none; }
         #frameImage:active { cursor: grabbing; }
@@ -119,39 +105,21 @@
         @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
         .booth-controls { display: flex; flex-direction: column; gap: 15px; width: 300px; background: var(--panel-bg); padding: 30px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid var(--primary-glow); flex-shrink: 0;}
         
-        /* SLIDER CSS */
         input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--primary-glow); cursor: pointer; margin-top: -8px; box-shadow: 0 0 10px var(--primary-glow);}
         input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #555; border-radius: 5px; }
 
-        /* PREVIEW IMAGE SPECIFICS */
-        #previewImage { width: 100%; height: 100%; object-fit: contain; } /* Prevents breaking out of container */
+        #previewImage { width: 100%; height: 100%; object-fit: contain; } 
         .random-compliment { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 1.5rem; font-weight: 800; border: 2px solid var(--primary-glow); white-space: nowrap; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 20; }
         @keyframes popUp { 0% { transform: translate(-50%, 50px) scale(0); opacity: 0;} 100% { transform: translate(-50%, 0) scale(1); opacity: 1;} }
         
         .qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 100; }
-        .qr-box { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 5px solid var(--primary-glow);}
+        .qr-box { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 5px solid var(--primary-glow); display: flex; align-items: center; justify-content: center; min-width: 290px; min-height: 290px;}
         
         #canvas { display: none; }
     </style>
 </head>
 <body class="theme-dark">
-
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const viewId = urlParams.get('view');
-        if(viewId) {
-            const imgData = localStorage.getItem(viewId);
-            if(imgData) {
-                document.write(`
-                    <body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center; height:100vh;">
-                        <img src="${imgData}" style="max-width:100%; max-height:100%; object-fit:contain;">
-                    </body>
-                `);
-                window.stop(); 
-            }
-        }
-    </script>
 
     <div class="bg-slider"></div>
     <div class="grid-overlay"></div>
@@ -195,7 +163,7 @@
     </div>
 
     <div class="footer-brand">
-        POWERED BY YUKI APPAREL PH // SYSTEM V5.4 (100% WYSIWYG FIX)
+        POWERED BY YUKI APPAREL PH // SYSTEM V6.0 (FIREBASE CLOUD)
     </div>
 
     <div id="introScreen" class="screen active">
@@ -270,15 +238,35 @@
     </div>
 
     <div class="qr-modal" id="qrModal">
-        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: #fff;">SCAN TO VIEW</h2>
-        <p style="color: #aaa; margin-bottom: 20px; text-align: center;">Make sure your phone is on the same Wi-Fi network.</p>
-        <div class="qr-box" id="qrCodeContainer"></div>
+        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 10px; color: #fff;">SCAN TO DOWNLOAD</h2>
+        <p style="color: #aaa; margin-bottom: 20px; text-align: center;">Scan with your phone camera to download directly.</p>
+        <div class="qr-box" id="qrCodeContainer">
+            <div id="qrLoadingText" style="color: #000; font-weight: 800; font-size: 1.2rem; text-align: center;">Uploading...<br>Please wait ⏳</div>
+        </div>
         <button class="action-btn" style="margin-top: 20px; background: transparent; color: #fff;" onclick="document.getElementById('qrModal').style.display='none'">Close</button>
     </div>
 
     <canvas id="canvas"></canvas>
 
     <script>
+        // ==========================================
+        // FIREBASE INITIALIZATION
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDWwUzJUqYyoIpKdf1MH3mRmoTX9JKlJuE",
+            authDomain: "qrcode-2e20e.firebaseapp.com",
+            projectId: "qrcode-2e20e",
+            storageBucket: "qrcode-2e20e.firebasestorage.app",
+            messagingSenderId: "931181134675",
+            appId: "1:931181134675:web:9657787b6ab0b1811857a6",
+            measurementId: "G-530QKPRLPN"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+
+        // ==========================================
+        // SYSTEM VARIABLES
+        // ==========================================
         const video = document.getElementById('video');
         const frameOverlay = document.getElementById('frameOverlay');
         const frameImage = document.getElementById('frameImage');
@@ -293,12 +281,11 @@
         const frameGallery = document.getElementById('frameGallery');
         const realtimeClock = document.getElementById('realtimeClock');
         const randomCompliment = document.getElementById('randomCompliment');
-        
         const camWidthInput = document.getElementById('camWidth');
         const camHeightInput = document.getElementById('camHeight');
+        
         let customRatioWidth = 3;
         let customRatioHeight = 4;
-
         let uploadedFrameData = null; 
         let isNikonConnected = false;
         let mobileFacingMode = 'environment';
@@ -306,7 +293,7 @@
         let finalDataURL = null;
         let savedFramesHistory = JSON.parse(localStorage.getItem('yukiFramesHistory')) || [];
 
-        // FRAME MANIPULATION VARIABLES
+        // FRAME MANIPULATION VARIABLES 
         let frameLeft = 0, frameTop = 0, frameWidth = 100, frameHeight = 100;
         let isDragging = false;
         let dragStartX, dragStartY, initialLeft, initialTop;
@@ -326,7 +313,6 @@
             }
         }
 
-        // Sets the CSS Variable so that BOTH Live and Preview boxes sync instantly
         function updateCameraRatioLive() {
             let cw = parseFloat(camWidthInput.value);
             let ch = parseFloat(camHeightInput.value);
@@ -339,7 +325,7 @@
         updateCameraRatioLive();
 
         // -----------------------------------------
-        // PARTICLES
+        // PARTICLES & CLOCK
         // -----------------------------------------
         const particlesContainer = document.getElementById('particlesContainer');
         for(let i=0; i<20; i++) {
@@ -353,9 +339,6 @@
             particlesContainer.appendChild(p);
         }
 
-        // -----------------------------------------
-        // CLOCK & SCREENS
-        // -----------------------------------------
         setInterval(() => {
             const now = new Date();
             realtimeClock.innerText = now.toLocaleString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).toUpperCase();
@@ -381,7 +364,7 @@
         }
 
         // -----------------------------------------
-        // GALLERY
+        // GALLERY & LOCAL FILES
         // -----------------------------------------
         function renderGallery() {
             frameGallery.innerHTML = '';
@@ -524,16 +507,15 @@
         document.addEventListener('touchend', dragEnd);
 
         // -----------------------------------------
-        // CAMERA SETUP & PROTECTION LOGIC
+        // CAMERA SETUP & PROTECTION
         // -----------------------------------------
         async function goToBooth() {
             showScreen('boothScreen');
-            captureBtn.disabled = true; // Protect capture button
+            captureBtn.disabled = true; 
             document.getElementById('cameraStatus').innerText = "INITIALIZING...";
             await startCameraStream();
         }
 
-        // VERY IMPORTANT: Only unlock capture when video is flowing!
         video.onloadedmetadata = () => {
             document.getElementById('cameraStatus').innerText = isNikonConnected ? "PRO MODE // NIKON" : `MOBILE // ${mobileFacingMode.toUpperCase()} CAM`;
             document.querySelector('.booth-controls p:nth-of-type(2)').innerText = "Get ready to smile!";
@@ -584,7 +566,7 @@
         }
 
         // -----------------------------------------
-        // CAPTURE & CANVA PROCESSING (BULLETPROOF MATH)
+        // CAPTURE & CANVA PROCESSING
         // -----------------------------------------
         captureBtn.addEventListener('click', () => {
             captureBtn.disabled = true;
@@ -638,7 +620,6 @@
             let startY = 0;
 
             if (drawHeight > vidH) {
-                // Video isn't tall enough, scale via height instead
                 drawHeight = vidH;
                 drawWidth = vidH * targetRatio;
                 startX = (vidW - drawWidth) / 2;
@@ -668,7 +649,7 @@
                     ctx.drawImage(img, fx, fy, fw, fh);
                     finishPreviewProcessing();
                 };
-                img.onerror = finishPreviewProcessing; // Safety fallback
+                img.onerror = finishPreviewProcessing; 
                 img.src = uploadedFrameData;
             } else {
                 finishPreviewProcessing();
@@ -696,9 +677,9 @@
             showScreen('boothScreen');
         }
 
-        // -----------------------------------------
-        // EXPORT OPTIONS & LOCAL STORAGE QR
-        // -----------------------------------------
+        // ==========================================
+        // EXPORT OPTIONS & FIREBASE QR UPLOAD
+        // ==========================================
         function getFileName() {
             const dateStr = new Date().toISOString().split('T')[0];
             return `YukiBooth_${dateStr}_${new Date().getTime()}`;
@@ -726,33 +707,45 @@
             pdf.save(getFileName() + ".pdf");
         }
 
-        function generateQR() {
+        // FIREBASE CLOUD STORAGE UPLOAD FOR QR CODE
+        async function generateQR() {
             if(!finalDataURL) return;
-            const qrContainer = document.getElementById('qrCodeContainer');
-            qrContainer.innerHTML = ""; 
             
-            const imageId = 'yuki_photo_' + new Date().getTime();
+            const qrContainer = document.getElementById('qrCodeContainer');
+            const modal = document.getElementById('qrModal');
+            
+            // Show Loading State
+            qrContainer.innerHTML = `<div id="qrLoadingText" style="color: #000; font-weight: 800; font-size: 1.2rem; text-align: center;">Uploading to Cloud...<br>Please wait ⏳</div>`;
+            modal.style.display = 'flex';
+
             try {
-                localStorage.setItem(imageId, finalDataURL);
-            } catch (e) {
-                alert("Browser Storage is full! Clearing old cache to make space...");
-                localStorage.clear(); 
-                localStorage.setItem(imageId, finalDataURL);
+                // Create a unique filename
+                const imageId = 'yuki_photo_' + new Date().getTime() + '.jpg';
+                
+                // Point to 'gallery' folder in Firebase Storage
+                const storageRef = storage.ref('gallery/' + imageId);
+                
+                // Upload the base64 string
+                await storageRef.putString(finalDataURL, 'data_url');
+                
+                // Get the public download URL directly to the image
+                const downloadURL = await storageRef.getDownloadURL();
+
+                // Clear loading text and generate QR with the Firebase URL
+                qrContainer.innerHTML = ""; 
+                new QRCode(qrContainer, {
+                    text: downloadURL,
+                    width: 250,
+                    height: 250,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.L
+                });
+
+            } catch (error) {
+                console.error("Firebase Upload Error:", error);
+                qrContainer.innerHTML = `<div style="color: red; font-weight: bold; text-align: center;">Upload Failed.<br>Check your Firebase Storage Rules.<br><span style="font-size:0.8rem; color:#555;">(Set to: allow read, write: if true;)</span></div>`;
             }
-
-            const currentUrl = window.location.origin + window.location.pathname;
-            const viewLink = `${currentUrl}?view=${imageId}`;
-
-            new QRCode(qrContainer, {
-                text: viewLink,
-                width: 250,
-                height: 250,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.L
-            });
-
-            document.getElementById('qrModal').style.display = 'flex';
         }
 
     </script>
