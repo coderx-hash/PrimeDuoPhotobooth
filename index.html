@@ -98,7 +98,7 @@
         .btn-pill {
             background-color: var(--primary-color); color: #000; font-weight: 900; font-size: 1.2rem; padding: 18px 50px; border-radius: 50px; border: 8px solid var(--stroke-color); cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s ease; box-shadow: 0 10px 30px var(--primary-glow); display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-align: center;
         }
-        .btn-pill:hover:not(:disabled) { transform: scale(1.05); border-color: var(--primary-color); background-color: var(--text-main); }
+        .btn-pill:hover:not(:disabled) { transform: scale(1.05); border-color: var(--primary-color); background-color: var(--text-main); color: var(--box-bg); }
         .btn-pill:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(100%); }
         .btn-pill.pulse { animation: pulseAnim 2s infinite; }
         @keyframes pulseAnim { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
@@ -131,7 +131,7 @@
         ------------------------------------------ */
         .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1200px; padding: 20px; justify-content: center;}
         
-        .view-box { position: relative; height: 70vh; width: auto; max-width: 90vw; aspect-ratio: var(--cam-ratio); background: #000; border: 4px solid var(--primary-color); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; transition: aspect-ratio 0.3s ease; flex-shrink: 0; }
+        .view-box { position: relative; height: 60vh; width: auto; max-width: 100%; aspect-ratio: var(--cam-ratio); background: #000; border: 4px solid var(--primary-color); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; transition: all 0.3s ease; flex-shrink: 0; margin: 0 auto; }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         video.no-mirror { transform: scaleX(1); } 
 
@@ -159,37 +159,59 @@
         @keyframes zoomInHype { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
         /* -----------------------------------------
-           FULLSCREEN BUTTONS & STYLES
+           NEW MOBILE-FRIENDLY CSS FULLSCREEN
         ------------------------------------------ */
-        #cameraWrapper:fullscreen {
-            background: #000;
-            border: none;
-            border-radius: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .fs-backdrop {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9998; display: none;
         }
+        .fs-backdrop.active { display: block; }
+
+        /* Kapag naka-fullscreen, i-force sa gitna pero panatilihin ang Aspect Ratio */
+        #cameraWrapper.css-fullscreen {
+            position: fixed !important;
+            top: 50% !important; 
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            z-index: 9999 !important;
+            margin: 0 !important;
+            
+            /* Magic constraint logic para hindi ma-stretch: */
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: calc(100vh * (var(--cam-ratio))) !important;
+            max-height: calc(100vw / (var(--cam-ratio))) !important;
+            
+            border: none !important; 
+            border-radius: 0 !important;
+            background: #000 !important;
+            box-shadow: none !important;
+        }
+
         .fs-controls {
             position: absolute;
-            bottom: 40px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: none;
-            gap: 20px;
-            z-index: 100;
+            gap: 15px;
+            z-index: 10000;
             width: 100%;
             justify-content: center;
             pointer-events: auto;
         }
-        #cameraWrapper:fullscreen .fs-controls {
+        /* Lalabas lang ang buttons kapag naka CSS fullscreen mode */
+        #cameraWrapper.css-fullscreen .fs-controls {
             display: flex;
+            position: fixed;
+            bottom: 40px;
         }
+        
         .fs-btn {
             background-color: var(--primary-color);
             color: #000;
             font-weight: 900;
-            font-size: 1.5rem;
-            padding: 20px 50px;
+            font-size: 1.2rem;
+            padding: 15px 40px;
             border-radius: 50px;
             border: 5px solid var(--stroke-color);
             cursor: pointer;
@@ -204,8 +226,8 @@
             background-color: #333;
             color: #fff;
             font-weight: 900;
-            font-size: 1.2rem;
-            padding: 20px 30px;
+            font-size: 1rem;
+            padding: 15px 25px;
             border-radius: 50px;
             border: 3px solid #555;
             cursor: pointer;
@@ -245,7 +267,7 @@
             box-shadow: 0 0 15px var(--primary-glow);
         }
 
-        .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; color: #fff; padding: 40px; border-radius: 20px; border: 2px solid var(--primary-color); z-index: 1000; display: none; flex-direction: column; gap: 15px; width: 400px; max-width: 90vw; max-height: 90vh; overflow-y: auto;}
+        .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; color: #fff; padding: 40px; border-radius: 20px; border: 2px solid var(--primary-color); z-index: 1000; display: none; flex-direction: column; gap: 15px; width: 400px; max-width: 90vw;}
         .admin-group { display: flex; flex-direction: column; gap: 5px; }
         .admin-group label { font-size: 0.8rem; color: #aaa; }
         .admin-group input, .admin-group select { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-weight: bold; outline: none;}
@@ -285,59 +307,46 @@
         #canvas { display: none; }
 
         /* -----------------------------------------
-           MOBILE RESPONSIVENESS (PERFECTED)
+           MOBILE RESPONSIVENESS (IMPROVED & RATIO FIXED)
         ------------------------------------------ */
         @media (max-width: 900px) {
-            /* Fixes the view-box to ALWAYS respect aspect-ratio from admin on mobile */
-            .booth-container { 
-                flex-direction: column-reverse; /* Puts camera on top, controls on bottom */
-                gap: 15px; 
-                padding: 15px; 
-                overflow-y: auto; 
-                height: 100%; 
-                justify-content: flex-end; 
-                padding-top: 60px; /* Space for Live Studio Pro text */
-            }
-            .view-box { 
-                height: 45vh; /* Fixed height so it fits the screen vertically */
-                max-height: 45vh; 
-                width: auto; /* Width auto scales perfectly based on aspect-ratio */
-                max-width: 95vw; /* Prevents horizontal scroll */
-                aspect-ratio: var(--cam-ratio); 
-                margin: 0 auto; 
-                flex-shrink: 0;
-            } 
-            .booth-controls { 
-                width: 100%; 
-                max-width: 100%; 
-                padding: 15px; 
-                flex-shrink: 0; 
-                margin-bottom: 20px;
-            }
-            .setup-header h1 { font-size: 2.5rem; }
-            .setup-box { padding: 20px; }
-            .btn-pill { padding: 12px 20px; font-size: 1rem; border-width: 4px; }
-            .hype-text { font-size: 3rem; }
-            #previewScreen { justify-content: center; padding-top: 10px;}
-            
-            .admin-trigger { width: 40px; height: 40px; font-size: 1rem; bottom: 15px; left: 15px; }
-
             .booking-banner { position: relative; left: 0; width: 100%; height: auto; border-right: none; border-bottom: 4px solid var(--primary-color); padding: 20px; animation: none; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
             .banner-content h3 { font-size: 1.5rem; }
             .banner-content p { margin-bottom: 15px; }
             .detail-item { padding: 10px; margin-bottom: 10px; }
-            .intro-title { font-size: 2.5rem; margin-top: 20px;}
-            .intro-title span { font-size: 1.2rem; }
+            .intro-title { font-size: 3rem; margin-top: 20px;}
+            .intro-title span { font-size: 1.5rem; }
             #introScreen { flex-direction: column; justify-content: flex-start; overflow-y: auto;}
+
+            .setup-header h1 { font-size: 2.5rem; }
+            .setup-box { padding: 20px; }
+            .booth-container { flex-direction: column-reverse; gap: 15px; padding: 10px; overflow-y: auto; height: 100%; justify-content: flex-end;}
+            
+            /* FIXED MOBILE CAMERA SIZE: Gumagamit ng CSS calc() para palaging sakto ang aspect ratio at hindi sumosobra sa screen height */
+            .view-box { 
+                height: auto; 
+                width: 100%; 
+                max-width: calc(55vh * (var(--cam-ratio))); 
+                max-height: 55vh; 
+                margin: 10px auto 0 auto; 
+            } 
+            
+            .booth-controls { width: 100%; max-width: 100%; padding: 15px; flex-shrink: 0; }
+            .btn-pill { padding: 15px 30px; font-size: 1rem; border-width: 4px; }
+            .hype-text { font-size: 3.5rem; }
+            #previewScreen { justify-content: center; padding-top: 10px;}
+            
+            .admin-trigger { width: 40px; height: 40px; font-size: 1rem; bottom: 15px; left: 15px; }
         }
 
-        /* Extra adjustments for even smaller phones */
         @media (max-width: 500px) {
             .setup-box { width: 100%; padding: 15px; border-radius: 16px;}
             .gallery-container { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .btn-pill { padding: 12px 15px; font-size: 0.9rem; border-width: 3px;}
-            .fs-btn { padding: 12px 20px; font-size: 1rem; }
-            .fs-close { padding: 12px 15px; font-size: 0.8rem; }
+            .btn-pill { padding: 12px 20px; font-size: 0.9rem; }
+            .fs-btn { padding: 12px 25px; font-size: 1rem; }
+            .fs-close { padding: 12px 20px; font-size: 0.85rem; }
+            .intro-title { font-size: 2.5rem; }
+            .intro-title span { font-size: 1.2rem; }
             .contact-grid .row { flex-direction: column; align-items: flex-start; gap: 3px; }
             .result-booking { padding: 15px; }
         }
@@ -456,7 +465,7 @@
                 
                 <button id="captureBtn" class="btn-pill" style="width: 100%; border-width: 5px;" disabled>📷 CAPTURE</button>
                 
-                <button id="fullscreenBtn" class="btn-pill" style="width: 100%; background: #fff; color: #000; border-width: 5px; margin-top: 10px; font-size: 1rem;" onclick="goFullScreen()">🔲 FULL SCREEN</button>
+                <button id="fullscreenBtn" class="btn-pill" style="width: 100%; background: #fff; color: #000; border-color: #ccc; border-width: 5px; margin-top: 10px; font-size: 1rem;" onclick="goFullScreen()">🔲 FULL SCREEN</button>
 
                 <button id="flipCamBtn" class="btn-pill" style="width: 100%; background: transparent; color: var(--text-main); border: 3px solid #555; margin-top: 10px; font-size: 0.9rem; padding: 12px; display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
                 
@@ -469,6 +478,8 @@
 
                 <button style="background:transparent; border:none; color:#ff4d4d; font-weight:bold; cursor:pointer; text-decoration:underline; margin-top:15px; font-size:0.9rem;" onclick="startNewSession()">Back to Home</button>
             </div>
+
+            <div id="fsBackdrop" class="fs-backdrop"></div>
 
             <div class="view-box" id="cameraWrapper">
                 <video id="video" autoplay playsinline></video>
@@ -510,7 +521,7 @@
             <button class="btn-pill" style="background: #e74c3c; border-color: #c0392b; color: white; border-width: 5px;" onclick="exportPDF()">📄 Export to PDF</button>
             <button class="btn-pill" style="background: #27ae60; border-color: #1e8449; color: white; border-width: 5px;" onclick="generateQR()">📱 Show QR Code</button>
             
-            <button class="btn-pill" style="background: transparent; color: var(--primary-color); border: 4px solid var(--primary-color); margin-top: 10px;" onclick="takeAnotherPhoto()">📸 Take Another Photo</button>
+            <button class="btn-pill" style="background: var(--text-main); color: var(--box-bg); border-color: var(--stroke-color); margin-top: 10px; border-width: 5px;" onclick="takeAnotherPhoto()">📸 Take Another Photo</button>
         </div>
         
         <div class="result-booking">
@@ -583,6 +594,7 @@
         const camWidthInput = document.getElementById('camWidth');
         const camHeightInput = document.getElementById('camHeight');
         const cameraWrapper = document.getElementById('cameraWrapper');
+        const fsBackdrop = document.getElementById('fsBackdrop'); // NEW BACKDROP VAR
         
         let customRatioWidth = 3;
         let customRatioHeight = 4;
@@ -598,26 +610,30 @@
         let dragStartX, dragStartY, initialLeft, initialTop;
 
         // -----------------------------------------
-        // FULLSCREEN LOGIC
+        // CSS-BASED FULLSCREEN LOGIC (100% MOBILE SAFE)
         // -----------------------------------------
         function goFullScreen() {
-            if (cameraWrapper.requestFullscreen) {
-                cameraWrapper.requestFullscreen();
-            } else if (cameraWrapper.webkitRequestFullscreen) { /* Safari */
-                cameraWrapper.webkitRequestFullscreen();
-            } else if (cameraWrapper.msRequestFullscreen) { /* IE11 */
-                cameraWrapper.msRequestFullscreen();
-            }
+            // Adds a CSS class that forces the wrapper to overlap the whole screen
+            cameraWrapper.classList.add('css-fullscreen');
+            fsBackdrop.classList.add('active');
+            
+            // Optional: Try native API too just to hide the browser URL bar on Android
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                }
+            } catch (e) {}
         }
 
         function exitFullScreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) { /* Safari */
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) { /* IE11 */
-                document.msExitFullscreen();
-            }
+            cameraWrapper.classList.remove('css-fullscreen');
+            fsBackdrop.classList.remove('active');
+            
+            try {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            } catch (e) {}
         }
 
         // -----------------------------------------
@@ -642,6 +658,7 @@
             if (!ch || ch <= 0) ch = 1;
             customRatioWidth = cw;
             customRatioHeight = ch;
+            // Ang magic na ito ay nagse-set ng root variable para automatically mag-adjust ang box kahit mobile o hindi.
             document.documentElement.style.setProperty('--cam-ratio', `${cw} / ${ch}`);
         }
         updateCameraRatioLive();
@@ -1053,10 +1070,8 @@
             randomCompliment.innerText = compliments[Math.floor(Math.random() * compliments.length)];
             randomCompliment.style.display = 'inline-block';
             
-            // Auto-exit fullscreen pag nakakuha na ng picture para kita ang preview UI
-            if (document.fullscreenElement) {
-                exitFullScreen();
-            }
+            // Ipapababa natin yung Fullscreen overlay bago lumipat ng screen
+            exitFullScreen();
 
             showScreen('previewScreen');
             captureBtn.disabled = false;
