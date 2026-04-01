@@ -156,6 +156,62 @@
         @keyframes zoomInHype { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
         /* -----------------------------------------
+           FULLSCREEN BUTTONS & STYLES
+        ------------------------------------------ */
+        #cameraWrapper:fullscreen {
+            background: #000;
+            border: none;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fs-controls {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 20px;
+            z-index: 100;
+            width: 100%;
+            justify-content: center;
+            pointer-events: auto;
+        }
+        #cameraWrapper:fullscreen .fs-controls {
+            display: flex;
+        }
+        .fs-btn {
+            background-color: var(--primary-color);
+            color: #000;
+            font-weight: 900;
+            font-size: 1.5rem;
+            padding: 20px 50px;
+            border-radius: 50px;
+            border: 5px solid var(--stroke-color);
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 10px 30px var(--primary-glow);
+            transition: 0.2s;
+        }
+        .fs-btn:active { transform: scale(0.95); }
+        .fs-btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(100%); }
+        
+        .fs-close {
+            background-color: #333;
+            color: #fff;
+            font-weight: 900;
+            font-size: 1.2rem;
+            padding: 20px 30px;
+            border-radius: 50px;
+            border: 3px solid #555;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .fs-close:active { transform: scale(0.95); }
+
+        /* -----------------------------------------
            ADMIN PANEL (GLASSMORPHISM BOTTOM LEFT)
         ------------------------------------------ */
         .admin-trigger { 
@@ -245,7 +301,6 @@
             .hype-text { font-size: 3.5rem; }
             #previewScreen { justify-content: center; padding-top: 10px;}
             
-            /* Admin icon resize for mobile */
             .admin-trigger { width: 40px; height: 40px; font-size: 1rem; bottom: 15px; left: 15px; }
         }
     </style>
@@ -362,6 +417,9 @@
                 <p style="opacity: 0.8; margin-bottom: 10px; font-size: 0.9rem;">Get ready to smile!</p>
                 
                 <button id="captureBtn" class="btn-pill" style="width: 100%; border-width: 5px;" disabled>📷 CAPTURE</button>
+                
+                <button id="fullscreenBtn" class="btn-pill" style="width: 100%; background: #fff; color: #000; border-width: 5px; margin-top: 10px; font-size: 1rem;" onclick="goFullScreen()">🔲 FULL SCREEN</button>
+
                 <button id="flipCamBtn" class="btn-pill" style="width: 100%; background: transparent; color: var(--text-main); border: 3px solid #555; margin-top: 10px; font-size: 0.9rem; padding: 12px; display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
                 
                 <div id="frameControls" style="display: none; flex-direction: column; gap: 5px; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -381,6 +439,11 @@
                 </div>
                 <div id="countdown" class="countdown-display"></div>
                 <div id="flashEffect" class="flash"></div>
+
+                <div class="fs-controls" id="fsControls">
+                    <button class="fs-close" onclick="exitFullScreen()">✖ Exit Fullscreen</button>
+                    <button class="fs-btn" id="fsCaptureBtn">📷 CAPTURE</button>
+                </div>
             </div>
         </div>
     </div>
@@ -408,6 +471,8 @@
             <button class="btn-pill" style="border-width: 5px;" onclick="downloadJPG()">📥 Save as JPG</button>
             <button class="btn-pill" style="background: #e74c3c; border-color: #c0392b; color: white; border-width: 5px;" onclick="exportPDF()">📄 Export to PDF</button>
             <button class="btn-pill" style="background: #27ae60; border-color: #1e8449; color: white; border-width: 5px;" onclick="generateQR()">📱 Show QR Code</button>
+            
+            <button class="btn-pill" style="background: transparent; color: var(--primary-color); border: 4px solid var(--primary-color); margin-top: 10px;" onclick="takeAnotherPhoto()">📸 Take Another Photo</button>
         </div>
         
         <div class="result-booking">
@@ -429,7 +494,7 @@
             </div>
         </div>
 
-        <button style="background:transparent; border:none; color:var(--text-main); font-weight:bold; cursor:pointer; text-decoration:underline; font-size:1.1rem; margin-top: 25px;" onclick="startNewSession()">🔄 New Session</button>
+        <button style="background:transparent; border:none; color:var(--text-main); font-weight:bold; cursor:pointer; text-decoration:underline; font-size:1.1rem; margin-top: 25px;" onclick="startNewSession()">🔄 New Session (Restart)</button>
     </div>
 
     <div class="qr-modal" id="qrModal">
@@ -468,6 +533,7 @@
         const frameControls = document.getElementById('frameControls');
         const frameSizeSlider = document.getElementById('frameSizeSlider');
         const captureBtn = document.getElementById('captureBtn');
+        const fsCaptureBtn = document.getElementById('fsCaptureBtn');
         const countdownEl = document.getElementById('countdown');
         const flashEffect = document.getElementById('flashEffect');
         const canvas = document.getElementById('canvas');
@@ -478,6 +544,7 @@
         const randomCompliment = document.getElementById('randomCompliment');
         const camWidthInput = document.getElementById('camWidth');
         const camHeightInput = document.getElementById('camHeight');
+        const cameraWrapper = document.getElementById('cameraWrapper');
         
         let customRatioWidth = 3;
         let customRatioHeight = 4;
@@ -491,6 +558,29 @@
         let frameLeft = 0, frameTop = 0, frameWidth = 100, frameHeight = 100;
         let isDragging = false;
         let dragStartX, dragStartY, initialLeft, initialTop;
+
+        // -----------------------------------------
+        // FULLSCREEN LOGIC
+        // -----------------------------------------
+        function goFullScreen() {
+            if (cameraWrapper.requestFullscreen) {
+                cameraWrapper.requestFullscreen();
+            } else if (cameraWrapper.webkitRequestFullscreen) { /* Safari */
+                cameraWrapper.webkitRequestFullscreen();
+            } else if (cameraWrapper.msRequestFullscreen) { /* IE11 */
+                cameraWrapper.msRequestFullscreen();
+            }
+        }
+
+        function exitFullScreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { /* Safari */
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { /* IE11 */
+                document.msExitFullscreen();
+            }
+        }
 
         // -----------------------------------------
         // ADMIN PANEL & LIVE RATIO SYNC
@@ -550,14 +640,22 @@
 
         function startNewSession() {
             finalDataURL = null;
-            uploadedFrameData = null; // Added to reset frame selection
+            uploadedFrameData = null; 
             document.getElementById('proceedBtn').style.display = 'none';
             randomCompliment.style.display = 'none'; 
             if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
             document.getElementById('cameraStatus').innerText = "INITIALIZING...";
             captureBtn.disabled = true;
-            renderGallery(); // Ensure gallery is fresh
-            showScreen('setupScreen'); // Changed from 'introScreen'
+            fsCaptureBtn.disabled = true;
+            renderGallery(); 
+            showScreen('setupScreen'); 
+        }
+
+        // NEW: Function to take another photo without resetting everything
+        function takeAnotherPhoto() {
+            finalDataURL = null;
+            randomCompliment.style.display = 'none';
+            showScreen('boothScreen');
         }
 
         // -----------------------------------------
@@ -730,6 +828,7 @@
         async function goToBooth() {
             showScreen('boothScreen');
             captureBtn.disabled = true; 
+            fsCaptureBtn.disabled = true;
             document.getElementById('cameraStatus').innerText = "INITIALIZING...";
             await startCameraStream();
         }
@@ -737,6 +836,7 @@
         video.onloadedmetadata = () => {
             document.getElementById('cameraStatus').innerText = isNikonConnected ? "PRO MODE // NIKON" : `MOBILE // ${mobileFacingMode.toUpperCase()}`;
             captureBtn.disabled = false;
+            fsCaptureBtn.disabled = false;
         };
 
         async function startCameraStream() {
@@ -777,6 +877,7 @@
 
         function flipCamera() {
             captureBtn.disabled = true;
+            fsCaptureBtn.disabled = true;
             document.getElementById('cameraStatus').innerText = "FLIPPING...";
             mobileFacingMode = mobileFacingMode === 'user' ? 'environment' : 'user';
             startCameraStream();
@@ -785,8 +886,9 @@
         // -----------------------------------------
         // CAPTURE & CANVA PROCESSING (UPDATED WITH PRE-TRIGGER)
         // -----------------------------------------
-        captureBtn.addEventListener('click', () => {
+        function triggerCaptureSequence() {
             captureBtn.disabled = true;
+            fsCaptureBtn.disabled = true;
             let timeLeft = 5;
             countdownEl.style.display = 'block';
             countdownEl.innerText = timeLeft;
@@ -818,7 +920,11 @@
                     }
                 }
             }, 1000);
-        });
+        }
+
+        // Parehas lang ang function na gagamitin mapa-normal o fullscreen capture
+        captureBtn.addEventListener('click', triggerCaptureSequence);
+        fsCaptureBtn.addEventListener('click', triggerCaptureSequence);
 
         async function triggerNodeJSCamera() {
             try {
@@ -847,7 +953,7 @@
             const vidW = video.videoWidth || 1080;
             const vidH = video.videoHeight || 1440;
             
-            // FIX: Kukunin na ngayon yung saktong size ng box mo sa screen bago mag-crop
+            // Kukunin ang saktong size ng box mo sa screen bago mag-crop
             // para 100% "What You See Is What You Get"
             const container = document.getElementById('cameraWrapper');
             const targetRatio = container.clientWidth / container.clientHeight; 
@@ -911,8 +1017,14 @@
             randomCompliment.innerText = compliments[Math.floor(Math.random() * compliments.length)];
             randomCompliment.style.display = 'inline-block';
             
+            // Auto-exit fullscreen pag nakakuha na ng picture para kita ang preview UI
+            if (document.fullscreenElement) {
+                exitFullScreen();
+            }
+
             showScreen('previewScreen');
             captureBtn.disabled = false;
+            fsCaptureBtn.disabled = false;
         }
 
         function retakePhoto() {
