@@ -115,7 +115,6 @@
 
         .gallery-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 30px; max-height: 40vh; overflow-y: auto; padding-right: 5px; }
         
-        /* FIX: Better Gallery Card Styling */
         .gallery-card { height: 120px; width: 100%; border-radius: 12px; background: var(--card-bg); border: 2px solid transparent; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s ease; color: var(--text-main); position: relative; overflow: hidden; box-sizing: border-box; }
         .gallery-card:hover { transform: scale(1.03); border-color: rgba(255,255,255,0.2); }
         .gallery-card.selected { border-color: var(--primary-color); box-shadow: 0 0 15px var(--primary-glow); background: var(--box-bg); transform: scale(1.02); }
@@ -246,7 +245,7 @@
             box-shadow: 0 0 15px var(--primary-glow);
         }
 
-        .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; color: #fff; padding: 40px; border-radius: 20px; border: 2px solid var(--primary-color); z-index: 1000; display: none; flex-direction: column; gap: 15px; width: 400px; max-width: 90vw;}
+        .admin-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; color: #fff; padding: 40px; border-radius: 20px; border: 2px solid var(--primary-color); z-index: 1000; display: none; flex-direction: column; gap: 15px; width: 400px; max-width: 90vw; max-height: 90vh; overflow-y: auto;}
         .admin-group { display: flex; flex-direction: column; gap: 5px; }
         .admin-group label { font-size: 0.8rem; color: #aaa; }
         .admin-group input, .admin-group select { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-weight: bold; outline: none;}
@@ -267,19 +266,18 @@
             width: 100%;
         }
         .result-booking h3 { font-size: 1.2rem; color: var(--primary-color); margin-bottom: 5px; text-transform: uppercase; font-weight: 900;}
-        .result-booking p { font-size: 0.85rem; color: var(--text-main); opacity: 0.9; margin-bottom: 15px; } /* FIX: Adapts to theme */
+        .result-booking p { font-size: 0.85rem; color: var(--text-main); opacity: 0.9; margin-bottom: 15px; } 
         
         .contact-grid { display: flex; flex-direction: column; gap: 8px; }
         
-        /* FIX: Adaptive Background and Text Colors */
         .contact-grid .row { 
             display: flex; justify-content: space-between; align-items: center; 
-            background: var(--card-bg); /* Matches theme gracefully */
+            background: var(--card-bg); 
             padding: 10px 15px; border-radius: 8px; 
             border: 1px solid rgba(128,128,128,0.1);
         }
         .contact-grid .label { color: var(--primary-color); font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;}
-        .contact-grid .val { color: var(--text-main); font-size: 0.85rem; font-weight: 700; word-break: break-all;} /* Adapts to dark/light text */
+        .contact-grid .val { color: var(--text-main); font-size: 0.85rem; font-weight: 700; word-break: break-all;} 
 
         .qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 100; padding: 20px; text-align: center;}
         .qr-box { background: #fff; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 5px solid var(--primary-color); display: flex; align-items: center; justify-content: center; min-width: 250px; min-height: 250px;}
@@ -287,38 +285,59 @@
         #canvas { display: none; }
 
         /* -----------------------------------------
-           MOBILE RESPONSIVENESS (IMPROVED)
+           MOBILE RESPONSIVENESS (PERFECTED)
         ------------------------------------------ */
         @media (max-width: 900px) {
+            /* Fixes the view-box to ALWAYS respect aspect-ratio from admin on mobile */
+            .booth-container { 
+                flex-direction: column-reverse; /* Puts camera on top, controls on bottom */
+                gap: 15px; 
+                padding: 15px; 
+                overflow-y: auto; 
+                height: 100%; 
+                justify-content: flex-end; 
+                padding-top: 60px; /* Space for Live Studio Pro text */
+            }
+            .view-box { 
+                height: 45vh; /* Fixed height so it fits the screen vertically */
+                max-height: 45vh; 
+                width: auto; /* Width auto scales perfectly based on aspect-ratio */
+                max-width: 95vw; /* Prevents horizontal scroll */
+                aspect-ratio: var(--cam-ratio); 
+                margin: 0 auto; 
+                flex-shrink: 0;
+            } 
+            .booth-controls { 
+                width: 100%; 
+                max-width: 100%; 
+                padding: 15px; 
+                flex-shrink: 0; 
+                margin-bottom: 20px;
+            }
+            .setup-header h1 { font-size: 2.5rem; }
+            .setup-box { padding: 20px; }
+            .btn-pill { padding: 12px 20px; font-size: 1rem; border-width: 4px; }
+            .hype-text { font-size: 3rem; }
+            #previewScreen { justify-content: center; padding-top: 10px;}
+            
+            .admin-trigger { width: 40px; height: 40px; font-size: 1rem; bottom: 15px; left: 15px; }
+
             .booking-banner { position: relative; left: 0; width: 100%; height: auto; border-right: none; border-bottom: 4px solid var(--primary-color); padding: 20px; animation: none; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
             .banner-content h3 { font-size: 1.5rem; }
             .banner-content p { margin-bottom: 15px; }
             .detail-item { padding: 10px; margin-bottom: 10px; }
-            .intro-title { font-size: 3rem; margin-top: 20px;}
-            .intro-title span { font-size: 1.5rem; }
+            .intro-title { font-size: 2.5rem; margin-top: 20px;}
+            .intro-title span { font-size: 1.2rem; }
             #introScreen { flex-direction: column; justify-content: flex-start; overflow-y: auto;}
-
-            .setup-header h1 { font-size: 2.5rem; }
-            .setup-box { padding: 20px; }
-            .booth-container { flex-direction: column-reverse; gap: 15px; padding: 10px; overflow-y: auto; height: 100%; justify-content: flex-end;}
-            .view-box { max-height: 50vh; width: 100%; margin-top: 10px; } 
-            .booth-controls { width: 100%; max-width: 400px; padding: 15px; flex-shrink: 0; }
-            .btn-pill { padding: 15px 30px; font-size: 1rem; border-width: 4px; }
-            .hype-text { font-size: 3.5rem; }
-            #previewScreen { justify-content: center; padding-top: 10px;}
-            
-            .admin-trigger { width: 40px; height: 40px; font-size: 1rem; bottom: 15px; left: 15px; }
         }
 
-        /* FIX: Extra adjustments for even smaller phones */
+        /* Extra adjustments for even smaller phones */
         @media (max-width: 500px) {
             .setup-box { width: 100%; padding: 15px; border-radius: 16px;}
             .gallery-container { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .btn-pill { padding: 12px 20px; font-size: 0.9rem; }
-            .fs-btn { padding: 12px 25px; font-size: 1.1rem; }
-            .fs-close { padding: 12px 20px; font-size: 0.9rem; }
-            .intro-title { font-size: 2.5rem; }
-            .intro-title span { font-size: 1.2rem; }
+            .btn-pill { padding: 12px 15px; font-size: 0.9rem; border-width: 3px;}
+            .fs-btn { padding: 12px 20px; font-size: 1rem; }
+            .fs-close { padding: 12px 15px; font-size: 0.8rem; }
             .contact-grid .row { flex-direction: column; align-items: flex-start; gap: 3px; }
             .result-booking { padding: 15px; }
         }
