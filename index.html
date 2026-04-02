@@ -606,7 +606,6 @@
         let customRatioHeight = 4;
         let uploadedFrameData = null; 
         
-        // Mode Flags
         let isNikonConnected = false;
         let isDigiCamMode = false;
         
@@ -626,9 +625,7 @@
             cameraWrapper.classList.add('css-fullscreen');
             fsBackdrop.classList.add('active');
             try {
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                }
+                if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
             } catch (e) {}
         }
 
@@ -636,9 +633,7 @@
             cameraWrapper.classList.remove('css-fullscreen');
             fsBackdrop.classList.remove('active');
             try {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                if (document.exitFullscreen) { document.exitFullscreen(); }
             } catch (e) {}
         }
 
@@ -658,10 +653,8 @@
         }
 
         function updateCameraRatioLive() {
-            let cw = parseFloat(camWidthInput.value);
-            let ch = parseFloat(camHeightInput.value);
-            if (!cw || cw <= 0) cw = 1;
-            if (!ch || ch <= 0) ch = 1;
+            let cw = parseFloat(camWidthInput.value) || 1;
+            let ch = parseFloat(camHeightInput.value) || 1;
             customRatioWidth = cw;
             customRatioHeight = ch;
             document.documentElement.style.setProperty('--cam-ratio', `${cw} / ${ch}`);
@@ -840,16 +833,12 @@
             isDragging = true;
             let clientX, clientY;
             if (e.type.includes('mouse')) {
-                clientX = e.clientX;
-                clientY = e.clientY;
+                clientX = e.clientX; clientY = e.clientY;
             } else {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
+                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
             }
-            dragStartX = clientX;
-            dragStartY = clientY;
-            initialLeft = frameLeft;
-            initialTop = frameTop;
+            dragStartX = clientX; dragStartY = clientY;
+            initialLeft = frameLeft; initialTop = frameTop;
             e.preventDefault(); 
         }
 
@@ -857,13 +846,10 @@
             if (!isDragging) return;
             let clientX, clientY;
             if (e.type.includes('mouse')) {
-                clientX = e.clientX;
-                clientY = e.clientY;
+                clientX = e.clientX; clientY = e.clientY;
             } else {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
+                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
             }
-            
             let dx = clientX - dragStartX;
             let dy = clientY - dragStartY;
             let cw = document.getElementById('cameraWrapper').clientWidth;
@@ -882,7 +868,7 @@
         document.addEventListener('touchend', dragEnd);
 
         // -----------------------------------------
-        // HYPE SCREEN & STRICT CAMERA SETUP
+        // HYPE SCREEN & CAMERA SETUP
         // -----------------------------------------
         function triggerReadyScreen() {
             showScreen('readyScreen');
@@ -891,63 +877,49 @@
 
         async function goToBooth() {
             showScreen('boothScreen');
-            
             captureBtn.disabled = true; 
             fsCaptureBtn.disabled = true;
-            
             document.getElementById('cameraStatus').innerText = "INITIALIZING...";
             await startCameraStream();
         }
 
-        // NEW FAIL-SAFE: Sensor Noise Detector
-        // Checks if the video feed is completely static (e.g. Nikon Error Graphic)
         async function verifyRealCameraFeed(vidElement) {
             return new Promise((resolve) => {
                 const checkCanvas = document.createElement('canvas');
-                checkCanvas.width = 64;
-                checkCanvas.height = 64;
+                checkCanvas.width = 64; checkCanvas.height = 64;
                 const ctxx = checkCanvas.getContext('2d', { willReadFrequently: true });
-
                 ctxx.drawImage(vidElement, 0, 0, 64, 64);
                 const frame1 = ctxx.getImageData(0, 0, 64, 64).data;
 
                 setTimeout(() => {
                     ctxx.drawImage(vidElement, 0, 0, 64, 64);
                     const frame2 = ctxx.getImageData(0, 0, 64, 64).data;
-
                     let isIdentical = true;
                     for (let i = 0; i < frame1.length; i += 4) {
-                        // Check if any pixel changed (even slightly due to sensor noise)
                         if (frame1[i] !== frame2[i] || frame1[i+1] !== frame2[i+1] || frame1[i+2] !== frame2[i+2]) {
-                            isIdentical = false; 
-                            break;
+                            isIdentical = false; break;
                         }
                     }
-                    resolve(!isIdentical); // If identical, it's a fake/placeholder screen. If not, it's real.
-                }, 600); // Check again after 600ms
+                    resolve(!isIdentical);
+                }, 600);
             });
         }
 
         video.onloadedmetadata = async () => {
             if(!isDigiCamMode) {
-                // Strict validation: Check for static virtual camera placeholders (like the Nikon error image)
                 document.getElementById('cameraStatus').innerText = "VERIFYING LENS...";
                 document.getElementById('cameraStatus').style.color = "yellow";
                 
-                // Delay slightly to let the stream output frames
                 setTimeout(async () => {
                     const isReal = await verifyRealCameraFeed(video);
-                    
                     if (isReal) {
                         document.getElementById('cameraStatus').innerText = isNikonConnected ? "PRO MODE // NIKON" : `MOBILE // ${mobileFacingMode.toUpperCase()}`;
                         document.getElementById('cameraStatus').style.color = "var(--primary-color)";
                         captureBtn.disabled = false;
                         fsCaptureBtn.disabled = false;
                     } else {
-                        document.getElementById('cameraStatus').innerText = "ERROR: LENS OFF / NIKON UTILITY BLOCKED!";
+                        document.getElementById('cameraStatus').innerText = "ERROR: LENS OFF / NIKON BLOCKED!";
                         document.getElementById('cameraStatus').style.color = "red";
-                        captureBtn.disabled = true;
-                        fsCaptureBtn.disabled = true;
                     }
                 }, 500);
             }
@@ -958,14 +930,11 @@
             
             if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
             
-            // --- DIGICAMCONTROL WEBSERVER LOGIC ---
             if(camSource === 'digicam') {
                 isDigiCamMode = true;
                 isNikonConnected = true; 
-                
                 video.style.display = 'none';
                 dccLive.style.display = 'block';
-                
                 document.getElementById('cameraStatus').innerText = "CONNECTING TO DIGICAM...";
                 document.getElementById('cameraStatus').style.color = "var(--primary-color)";
                 document.getElementById('flipCamBtn').style.display = 'none';
@@ -980,15 +949,12 @@
                 dccLive.onerror = () => {
                     document.getElementById('cameraStatus').innerText = "DIGICAM ERROR! SERVER OFF?";
                     document.getElementById('cameraStatus').style.color = "red";
-                    captureBtn.disabled = true;
-                    fsCaptureBtn.disabled = true;
                 };
 
                 dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
                 return;
             }
 
-            // --- STANDARD WEBCAM / CAPTURE CARD LOGIC ---
             isDigiCamMode = false;
             video.style.display = 'block';
             dccLive.style.display = 'none';
@@ -1028,9 +994,6 @@
                 alert("Camera access required or no camera found."); 
                 document.getElementById('cameraStatus').innerText = "CAMERA BLOCKED / NOT FOUND!";
                 document.getElementById('cameraStatus').style.color = "red";
-                
-                captureBtn.disabled = true;
-                fsCaptureBtn.disabled = true;
             }
         }
 
@@ -1043,31 +1006,18 @@
         }
 
         // -----------------------------------------
-        // CAPTURE & CANVA PROCESSING 
+        // PERFECT CAPTURE LOGIC WITH NODE.JS
         // -----------------------------------------
-        function triggerCaptureSequence() {
+        async function triggerCaptureSequence() {
             captureBtn.disabled = true;
             fsCaptureBtn.disabled = true;
-            let timeLeft = 5;
+            
+            let timeLeft = 3; 
             countdownEl.style.display = 'block';
             countdownEl.innerText = timeLeft;
 
-            let isPreTriggered = false; 
-
             const timerInterval = setInterval(async () => {
                 timeLeft--;
-
-                if (timeLeft === 1 && (isNikonConnected || isDigiCamMode) && !isPreTriggered) {
-                    isPreTriggered = true;
-                    
-                    await captureFrameToCanvas(); 
-                    
-                    if (isDigiCamMode) {
-                        fetch('http://127.0.0.1:5514/?slc=capture', { mode: 'no-cors' }).catch(e => console.log("Trigger sent."));
-                    } else {
-                        triggerNodeJSCamera(); 
-                    }
-                }
 
                 if (timeLeft > 0) {
                     countdownEl.innerText = timeLeft;
@@ -1075,14 +1025,41 @@
                     clearInterval(timerInterval);
                     countdownEl.style.display = 'none';
 
-                    if (isNikonConnected || isDigiCamMode) {
-                        flashEffect.classList.remove('active');
-                        void flashEffect.offsetWidth; 
-                        flashEffect.classList.add('active');
-                        
+                    // 1. SCREEN FLASH EFFECT
+                    flashEffect.classList.remove('active');
+                    void flashEffect.offsetWidth; 
+                    flashEffect.classList.add('active');
+
+                    document.getElementById('cameraStatus').innerText = "📸 CAPTURING... PLEASE WAIT";
+
+                    // 2. TRIGGER HARDWARE & GRAB IMAGE
+                    if (isNikonConnected && !isDigiCamMode) {
+                        try {
+                            // Utusan ang Node.js na papitikin ang flash at i-save ang picture
+                            const response = await fetch('http://localhost:3000/trigger-camera', { method: 'POST' });
+                            const data = await response.json();
+
+                            if (data.success) {
+                                // Kunin ang High-Res Image at i-drawing sa canvas kasama ng frame
+                                await drawHighResImageToCanvas(data.photoUrl);
+                                finishPreviewProcessing();
+                            } else {
+                                throw new Error("Node trigger failed");
+                            }
+                        } catch (error) {
+                            console.error("Node server error:", error);
+                            alert("Node server not detected! Capturing from webcam instead.");
+                            await captureFrameToCanvas(); 
+                            finishPreviewProcessing();
+                        }
+                    } else if (isDigiCamMode) {
+                        fetch('http://127.0.0.1:5514/?slc=capture', { mode: 'no-cors' }).catch(e=>e);
+                        await captureFrameToCanvas(); 
                         finishPreviewProcessing();
                     } else {
-                        triggerMobileCapture();
+                        // Standard Webcam Capture
+                        await captureFrameToCanvas();
+                        finishPreviewProcessing();
                     }
                 }
             }, 1000);
@@ -1091,35 +1068,61 @@
         captureBtn.addEventListener('click', triggerCaptureSequence);
         fsCaptureBtn.addEventListener('click', triggerCaptureSequence);
 
-        async function triggerNodeJSCamera() {
-            try {
-                await fetch('http://localhost:3000/trigger-camera');
-            } catch (error) { 
-                console.error("Camera trigger error. Server running?", error);
-            }
+        // Ito ang maglo-load ng malinaw na picture galing sa Node.js mo papunta sa Photobooth format
+        async function drawHighResImageToCanvas(photoUrl) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous"; // Kailangan para hindi mag-error sa export
+                img.src = photoUrl + '?t=' + new Date().getTime(); // Anti-cache
+
+                img.onload = () => {
+                    const container = document.getElementById('cameraWrapper');
+                    const targetRatio = container.clientWidth / container.clientHeight;
+
+                    let drawWidth = img.width;
+                    let drawHeight = img.width / targetRatio;
+                    let startX = 0;
+                    let startY = 0;
+
+                    if (drawHeight > img.height) {
+                        drawHeight = img.height;
+                        drawWidth = img.height * targetRatio;
+                        startX = (img.width - drawWidth) / 2;
+                    } else {
+                        startY = (img.height - drawHeight) / 2;
+                    }
+
+                    canvas.width = Math.max(1, Math.round(drawWidth));
+                    canvas.height = Math.max(1, Math.round(drawHeight));
+
+                    // I-drawing ang Nikon Picture
+                    ctx.drawImage(img, startX, startY, drawWidth, drawHeight, 0, 0, canvas.width, canvas.height);
+
+                    // I-drawing ang Frame sa ibabaw
+                    if (uploadedFrameData) {
+                        const overlayImg = new Image();
+                        overlayImg.onload = () => {
+                            let fw = canvas.width * (frameWidth / 100);
+                            let fh = canvas.height * (frameHeight / 100);
+                            let fx = canvas.width * (frameLeft / 100);
+                            let fy = canvas.height * (frameTop / 100);
+                            ctx.drawImage(overlayImg, fx, fy, fw, fh);
+                            resolve();
+                        };
+                        overlayImg.onerror = resolve; 
+                        overlayImg.src = uploadedFrameData;
+                    } else {
+                        resolve();
+                    }
+                };
+                img.onerror = () => reject("Failed to load high-res photo");
+            });
         }
 
-        async function triggerMobileCapture() {
-            let track = currentStream ? currentStream.getVideoTracks()[0] : null;
-            if (track) { try { const capabilities = track.getCapabilities(); if (capabilities.torch) await track.applyConstraints({ advanced: [{ torch: true }] }); } catch (e) { } }
-            
-            flashEffect.classList.remove('active');
-            void flashEffect.offsetWidth; 
-            flashEffect.classList.add('active');
-
-            setTimeout(async () => { 
-                await captureFrameToCanvas(); 
-                finishPreviewProcessing();
-            }, 500);
-
-            setTimeout(async () => { if (track) { try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e){} } }, 1500);
-        }
-
+        // Ito ang lumang code mo para sa fallback (Capture card / Webcam)
         async function captureFrameToCanvas() {
             return new Promise((resolve) => {
-                
                 const activeSource = isDigiCamMode ? dccLive : video;
-                
                 const vidW = activeSource.videoWidth || activeSource.naturalWidth || 1080;
                 const vidH = activeSource.videoHeight || activeSource.naturalHeight || 1440;
                 
@@ -1157,7 +1160,6 @@
                         let fh = canvas.height * (frameHeight / 100);
                         let fx = canvas.width * (frameLeft / 100);
                         let fy = canvas.height * (frameTop / 100);
-                        
                         ctx.drawImage(img, fx, fy, fw, fh);
                         resolve();
                     };
@@ -1175,7 +1177,7 @@
                 previewImage.src = finalDataURL;
             } catch (e) {
                 console.error("Canvas export failed", e);
-                alert("Failed to process image. Make sure camera is not blocked.");
+                alert("Failed to process image.");
             }
             
             const compliments = [
@@ -1187,20 +1189,11 @@
             randomCompliment.style.display = 'inline-block';
             
             exitFullScreen();
-
             showScreen('previewScreen');
             captureBtn.disabled = false;
             fsCaptureBtn.disabled = false;
-        }
-
-        function retakePhoto() {
-            finalDataURL = null;
-            randomCompliment.style.display = 'none'; 
-            showScreen('boothScreen');
             
-            if (isDigiCamMode) {
-                dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
-            }
+            document.getElementById('cameraStatus').innerText = "READY TO SHOOT";
         }
 
         // ==========================================
