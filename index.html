@@ -1034,7 +1034,6 @@
             let photoPromise = null;
 
             // [ANG DAYA]: UTUSAN AGAD ANG NODE.JS PAGKAPINDOT PA LANG NG BUTTON!
-            // Para yung 4 seconds na delay ng camera, mangyayari HANGGANG nag-co-countdown ang screen.
             if (document.getElementById('adminCameraSource').value === 'nikon') {
                 document.getElementById('cameraStatus').innerText = "📸 WARMING UP LENS...";
                 photoPromise = fetch('http://localhost:3000/trigger-camera', { method: 'POST' })
@@ -1064,10 +1063,10 @@
 
                     document.getElementById('cameraStatus').innerText = "📸 DOWNLOADING PHOTO...";
 
-                    // 2. KUNIN YUNG PICTURE GALING SA NIKON (Dapat tapos na siya pumitik ngayon!)
+                    // 2. KUNIN YUNG PICTURE GALING SA NIKON
                     if (document.getElementById('adminCameraSource').value === 'nikon') {
                         try {
-                            const data = await photoPromise; // Hintayin matapos ang pagpasa ng picture
+                            const data = await photoPromise; 
                             
                             if (data && data.success) {
                                 await drawHighResImageToCanvas(data.photoUrl);
@@ -1077,7 +1076,6 @@
                             }
                         } catch (error) {
                             console.error(error);
-                            // Tatanggalin ang flash effect
                             flashEffect.classList.remove('active');
                             void flashEffect.offsetWidth; 
                             flashEffect.classList.add('active');
@@ -1125,10 +1123,19 @@
                     canvas.width = Math.max(1, Math.round(drawWidth));
                     canvas.height = Math.max(1, Math.round(drawHeight));
 
-                    // I-drawing ang Nikon Picture
+                    // 👇👇👇 DITO BANDA INAYOS YUNG MIRROR FLIP SAKTONG KUNG ANO YUNG NASA PREVIEW 👇👇👇
+                    // I-flip muna ang canvas bago i-drawing ang High-Res picture para maging "mirror style"
+                    ctx.translate(canvas.width, 0);
+                    ctx.scale(-1, 1);
+                    
+                    // I-drawing ang Nikon Picture na naka-mirror
                     ctx.drawImage(img, startX, startY, drawWidth, drawHeight, 0, 0, canvas.width, canvas.height);
+                    
+                    // I-reset ang canvas pabalik sa normal BAGO i-drawing ang frame para hindi bumaligtad ang text/logo mo
+                    ctx.setTransform(1, 0, 0, 1, 0, 0);
+                    // 👆👆👆 HANGGANG DITO YUNG INAYOS PARA SA MIRROR FIX 👆👆👆
 
-                    // I-drawing ang Frame sa ibabaw
+                    // I-drawing ang Frame sa ibabaw (hindi ito mababaligtad dahil ni-reset natin sa taas)
                     if (uploadedFrameData) {
                         const overlayImg = new Image();
                         overlayImg.onload = () => {
