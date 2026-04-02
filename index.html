@@ -99,7 +99,7 @@
             background-color: var(--primary-color); color: #000; font-weight: 900; font-size: 1.2rem; padding: 18px 50px; border-radius: 50px; border: 8px solid var(--stroke-color); cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s ease; box-shadow: 0 10px 30px var(--primary-glow); display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-align: center;
         }
         .btn-pill:hover:not(:disabled) { transform: scale(1.05); border-color: var(--primary-color); background-color: var(--text-main); color: var(--box-bg); }
-        .btn-pill:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(100%); }
+        .btn-pill:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(100%); box-shadow: none; }
         .btn-pill.pulse { animation: pulseAnim 2s infinite; }
         @keyframes pulseAnim { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 
@@ -166,7 +166,6 @@
         }
         .fs-backdrop.active { display: block; }
 
-        /* Kapag naka-fullscreen, i-force sa gitna pero panatilihin ang Aspect Ratio */
         #cameraWrapper.css-fullscreen {
             position: fixed !important;
             top: 50% !important; 
@@ -174,13 +173,10 @@
             transform: translate(-50%, -50%) !important;
             z-index: 9999 !important;
             margin: 0 !important;
-            
-            /* Magic constraint logic para hindi ma-stretch: */
             width: 100vw !important;
             height: 100vh !important;
             max-width: calc(100vh * (var(--cam-ratio))) !important;
             max-height: calc(100vw / (var(--cam-ratio))) !important;
-            
             border: none !important; 
             border-radius: 0 !important;
             background: #000 !important;
@@ -199,7 +195,6 @@
             justify-content: center;
             pointer-events: auto;
         }
-        /* Lalabas lang ang buttons kapag naka CSS fullscreen mode */
         #cameraWrapper.css-fullscreen .fs-controls {
             display: flex;
             position: fixed;
@@ -220,7 +215,7 @@
             transition: 0.2s;
         }
         .fs-btn:active { transform: scale(0.95); }
-        .fs-btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(100%); }
+        .fs-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(100%); }
         
         .fs-close {
             background-color: #333;
@@ -307,7 +302,7 @@
         #canvas { display: none; }
 
         /* -----------------------------------------
-           MOBILE RESPONSIVENESS (IMPROVED & RATIO FIXED)
+           MOBILE RESPONSIVENESS
         ------------------------------------------ */
         @media (max-width: 900px) {
             .booking-banner { position: relative; left: 0; width: 100%; height: auto; border-right: none; border-bottom: 4px solid var(--primary-color); padding: 20px; animation: none; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
@@ -322,7 +317,6 @@
             .setup-box { padding: 20px; }
             .booth-container { flex-direction: column-reverse; gap: 15px; padding: 10px; overflow-y: auto; height: 100%; justify-content: flex-end;}
             
-            /* FIXED MOBILE CAMERA SIZE: Gumagamit ng CSS calc() para palaging sakto ang aspect ratio at hindi sumosobra sa screen height */
             .view-box { 
                 height: auto; 
                 width: 100%; 
@@ -368,6 +362,15 @@
     <div class="admin-overlay" id="adminOverlay" onclick="toggleAdmin()"></div>
     <div class="admin-panel" id="adminPanel">
         <h2>Admin Settings</h2>
+        
+        <div class="admin-group">
+            <label>Camera Source:</label>
+            <select id="adminCameraSource" onchange="startNewSession()" style="background:#111; color:#fff; border-color: var(--primary-color);">
+                <option value="webcam">Webcam / Capture Card / Mobile</option>
+                <option value="digicam">DigiCamControl (Port 5514 / USB)</option>
+            </select>
+        </div>
+
         <div class="admin-group">
             <label>Event Theme:</label>
             <select id="adminThemeSelect" onchange="document.body.className = this.value" style="background:#111; color:#fff;">
@@ -393,7 +396,7 @@
     </div>
 
     <div class="footer-brand">
-        POWERED BY YUKI APPAREL PH // SYSTEM V7.3
+        POWERED BY YUKI APPAREL PH // SYSTEM V7.5
     </div>
 
     <div id="introScreen" class="screen active">
@@ -483,6 +486,8 @@
 
             <div class="view-box" id="cameraWrapper">
                 <video id="video" autoplay playsinline></video>
+                <img id="dccLive" src="" crossorigin="anonymous" style="display:none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);">
+                
                 <div id="frameOverlay">
                     <img id="frameImage" src="" draggable="false">
                 </div>
@@ -491,7 +496,7 @@
 
                 <div class="fs-controls" id="fsControls">
                     <button class="fs-close" onclick="exitFullScreen()">✖ Exit Fullscreen</button>
-                    <button class="fs-btn" id="fsCaptureBtn">📷 CAPTURE</button>
+                    <button class="fs-btn" id="fsCaptureBtn" disabled>📷 CAPTURE</button>
                 </div>
             </div>
         </div>
@@ -577,6 +582,7 @@
         // SYSTEM VARIABLES
         // ==========================================
         const video = document.getElementById('video');
+        const dccLive = document.getElementById('dccLive'); 
         const frameOverlay = document.getElementById('frameOverlay');
         const frameImage = document.getElementById('frameImage');
         const frameControls = document.getElementById('frameControls');
@@ -594,12 +600,16 @@
         const camWidthInput = document.getElementById('camWidth');
         const camHeightInput = document.getElementById('camHeight');
         const cameraWrapper = document.getElementById('cameraWrapper');
-        const fsBackdrop = document.getElementById('fsBackdrop'); // NEW BACKDROP VAR
+        const fsBackdrop = document.getElementById('fsBackdrop'); 
         
         let customRatioWidth = 3;
         let customRatioHeight = 4;
         let uploadedFrameData = null; 
+        
+        // Mode Flags
         let isNikonConnected = false;
+        let isDigiCamMode = false;
+        
         let mobileFacingMode = 'environment';
         let currentStream = null;
         let finalDataURL = null;
@@ -610,14 +620,11 @@
         let dragStartX, dragStartY, initialLeft, initialTop;
 
         // -----------------------------------------
-        // CSS-BASED FULLSCREEN LOGIC (100% MOBILE SAFE)
+        // FULLSCREEN LOGIC
         // -----------------------------------------
         function goFullScreen() {
-            // Adds a CSS class that forces the wrapper to overlap the whole screen
             cameraWrapper.classList.add('css-fullscreen');
             fsBackdrop.classList.add('active');
-            
-            // Optional: Try native API too just to hide the browser URL bar on Android
             try {
                 if (document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen();
@@ -628,7 +635,6 @@
         function exitFullScreen() {
             cameraWrapper.classList.remove('css-fullscreen');
             fsBackdrop.classList.remove('active');
-            
             try {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
@@ -658,7 +664,6 @@
             if (!ch || ch <= 0) ch = 1;
             customRatioWidth = cw;
             customRatioHeight = ch;
-            // Ang magic na ito ay nagse-set ng root variable para automatically mag-adjust ang box kahit mobile o hindi.
             document.documentElement.style.setProperty('--cam-ratio', `${cw} / ${ch}`);
         }
         updateCameraRatioLive();
@@ -700,8 +705,10 @@
             randomCompliment.style.display = 'none'; 
             if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
             document.getElementById('cameraStatus').innerText = "INITIALIZING...";
+            
             captureBtn.disabled = true;
             fsCaptureBtn.disabled = true;
+            
             renderGallery(); 
             showScreen('setupScreen'); 
         }
@@ -710,6 +717,9 @@
             finalDataURL = null;
             randomCompliment.style.display = 'none';
             showScreen('boothScreen');
+            if (isDigiCamMode) {
+                dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
+            }
         }
 
         // -----------------------------------------
@@ -872,7 +882,7 @@
         document.addEventListener('touchend', dragEnd);
 
         // -----------------------------------------
-        // HYPE SCREEN & CAMERA SETUP
+        // HYPE SCREEN & STRICT CAMERA SETUP
         // -----------------------------------------
         function triggerReadyScreen() {
             showScreen('readyScreen');
@@ -881,20 +891,108 @@
 
         async function goToBooth() {
             showScreen('boothScreen');
+            
             captureBtn.disabled = true; 
             fsCaptureBtn.disabled = true;
+            
             document.getElementById('cameraStatus').innerText = "INITIALIZING...";
             await startCameraStream();
         }
 
-        video.onloadedmetadata = () => {
-            document.getElementById('cameraStatus').innerText = isNikonConnected ? "PRO MODE // NIKON" : `MOBILE // ${mobileFacingMode.toUpperCase()}`;
-            captureBtn.disabled = false;
-            fsCaptureBtn.disabled = false;
+        // NEW FAIL-SAFE: Sensor Noise Detector
+        // Checks if the video feed is completely static (e.g. Nikon Error Graphic)
+        async function verifyRealCameraFeed(vidElement) {
+            return new Promise((resolve) => {
+                const checkCanvas = document.createElement('canvas');
+                checkCanvas.width = 64;
+                checkCanvas.height = 64;
+                const ctxx = checkCanvas.getContext('2d', { willReadFrequently: true });
+
+                ctxx.drawImage(vidElement, 0, 0, 64, 64);
+                const frame1 = ctxx.getImageData(0, 0, 64, 64).data;
+
+                setTimeout(() => {
+                    ctxx.drawImage(vidElement, 0, 0, 64, 64);
+                    const frame2 = ctxx.getImageData(0, 0, 64, 64).data;
+
+                    let isIdentical = true;
+                    for (let i = 0; i < frame1.length; i += 4) {
+                        // Check if any pixel changed (even slightly due to sensor noise)
+                        if (frame1[i] !== frame2[i] || frame1[i+1] !== frame2[i+1] || frame1[i+2] !== frame2[i+2]) {
+                            isIdentical = false; 
+                            break;
+                        }
+                    }
+                    resolve(!isIdentical); // If identical, it's a fake/placeholder screen. If not, it's real.
+                }, 600); // Check again after 600ms
+            });
+        }
+
+        video.onloadedmetadata = async () => {
+            if(!isDigiCamMode) {
+                // Strict validation: Check for static virtual camera placeholders (like the Nikon error image)
+                document.getElementById('cameraStatus').innerText = "VERIFYING LENS...";
+                document.getElementById('cameraStatus').style.color = "yellow";
+                
+                // Delay slightly to let the stream output frames
+                setTimeout(async () => {
+                    const isReal = await verifyRealCameraFeed(video);
+                    
+                    if (isReal) {
+                        document.getElementById('cameraStatus').innerText = isNikonConnected ? "PRO MODE // NIKON" : `MOBILE // ${mobileFacingMode.toUpperCase()}`;
+                        document.getElementById('cameraStatus').style.color = "var(--primary-color)";
+                        captureBtn.disabled = false;
+                        fsCaptureBtn.disabled = false;
+                    } else {
+                        document.getElementById('cameraStatus').innerText = "ERROR: LENS OFF / NIKON UTILITY BLOCKED!";
+                        document.getElementById('cameraStatus').style.color = "red";
+                        captureBtn.disabled = true;
+                        fsCaptureBtn.disabled = true;
+                    }
+                }, 500);
+            }
         };
 
         async function startCameraStream() {
-            if (currentStream) currentStream.getTracks().forEach(track => track.stop());
+            const camSource = document.getElementById('adminCameraSource').value;
+            
+            if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
+            
+            // --- DIGICAMCONTROL WEBSERVER LOGIC ---
+            if(camSource === 'digicam') {
+                isDigiCamMode = true;
+                isNikonConnected = true; 
+                
+                video.style.display = 'none';
+                dccLive.style.display = 'block';
+                
+                document.getElementById('cameraStatus').innerText = "CONNECTING TO DIGICAM...";
+                document.getElementById('cameraStatus').style.color = "var(--primary-color)";
+                document.getElementById('flipCamBtn').style.display = 'none';
+                
+                dccLive.onload = () => {
+                    document.getElementById('cameraStatus').innerText = "PRO MODE // DIGICAM 5514";
+                    document.getElementById('cameraStatus').style.color = "var(--primary-color)";
+                    captureBtn.disabled = false;
+                    fsCaptureBtn.disabled = false;
+                };
+
+                dccLive.onerror = () => {
+                    document.getElementById('cameraStatus').innerText = "DIGICAM ERROR! SERVER OFF?";
+                    document.getElementById('cameraStatus').style.color = "red";
+                    captureBtn.disabled = true;
+                    fsCaptureBtn.disabled = true;
+                };
+
+                dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
+                return;
+            }
+
+            // --- STANDARD WEBCAM / CAPTURE CARD LOGIC ---
+            isDigiCamMode = false;
+            video.style.display = 'block';
+            dccLive.style.display = 'none';
+
             try {
                 const streamConfig = await navigator.mediaDevices.getUserMedia({ video: true });
                 const devices = await navigator.mediaDevices.enumerateDevices();
@@ -921,11 +1019,18 @@
                     else video.classList.remove('no-mirror');
                     constraints = { video: { facingMode: mobileFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } } };
                 }
+                
+                document.getElementById('cameraStatus').style.color = "var(--primary-color)";
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = currentStream;
+                
             } catch (err) { 
-                alert("Camera access required."); 
-                document.getElementById('cameraStatus').innerText = "CAMERA BLOCKED!";
+                alert("Camera access required or no camera found."); 
+                document.getElementById('cameraStatus').innerText = "CAMERA BLOCKED / NOT FOUND!";
+                document.getElementById('cameraStatus').style.color = "red";
+                
+                captureBtn.disabled = true;
+                fsCaptureBtn.disabled = true;
             }
         }
 
@@ -938,7 +1043,7 @@
         }
 
         // -----------------------------------------
-        // CAPTURE & CANVA PROCESSING (UPDATED WITH PRE-TRIGGER)
+        // CAPTURE & CANVA PROCESSING 
         // -----------------------------------------
         function triggerCaptureSequence() {
             captureBtn.disabled = true;
@@ -947,29 +1052,36 @@
             countdownEl.style.display = 'block';
             countdownEl.innerText = timeLeft;
 
-            let isPreTriggered = false; // Taga-check kung na-trigger na ba ang Node.js
+            let isPreTriggered = false; 
 
-            const timerInterval = setInterval(() => {
+            const timerInterval = setInterval(async () => {
                 timeLeft--;
 
-                // PRE-TRIGGER LOGIC: Pumuputok 1 segundo bago mag zero para sumabay ang flash!
-                if (timeLeft === 1 && isNikonConnected && !isPreTriggered) {
+                if (timeLeft === 1 && (isNikonConnected || isDigiCamMode) && !isPreTriggered) {
                     isPreTriggered = true;
-                    triggerNodeJSCamera(); 
+                    
+                    await captureFrameToCanvas(); 
+                    
+                    if (isDigiCamMode) {
+                        fetch('http://127.0.0.1:5514/?slc=capture', { mode: 'no-cors' }).catch(e => console.log("Trigger sent."));
+                    } else {
+                        triggerNodeJSCamera(); 
+                    }
                 }
 
                 if (timeLeft > 0) {
                     countdownEl.innerText = timeLeft;
                 } else {
-                    // PAGDATING SA ZERO
                     clearInterval(timerInterval);
                     countdownEl.style.display = 'none';
 
-                    if (isNikonConnected) {
-                        // Mag s-screen flash na lang dito kasi yung DSLR pumitik na kanina (pre-trigger)
-                        playFlashAndProcess(0); 
+                    if (isNikonConnected || isDigiCamMode) {
+                        flashEffect.classList.remove('active');
+                        void flashEffect.offsetWidth; 
+                        flashEffect.classList.add('active');
+                        
+                        finishPreviewProcessing();
                     } else {
-                        // Para sa Mobile, walang mechanical delay kaya sakto lang tawagin sa zero.
                         triggerMobileCapture();
                     }
                 }
@@ -981,7 +1093,6 @@
 
         async function triggerNodeJSCamera() {
             try {
-                // Utusan na lang agad ang Node.js na pumitik, hindi na kailangan mag process image dito.
                 await fetch('http://localhost:3000/trigger-camera');
             } catch (error) { 
                 console.error("Camera trigger error. Server running?", error);
@@ -991,66 +1102,71 @@
         async function triggerMobileCapture() {
             let track = currentStream ? currentStream.getVideoTracks()[0] : null;
             if (track) { try { const capabilities = track.getCapabilities(); if (capabilities.torch) await track.applyConstraints({ advanced: [{ torch: true }] }); } catch (e) { } }
-            playFlashAndProcess(500);
-            setTimeout(async () => { if (track) { try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e){} } }, 1500);
-        }
-
-        function playFlashAndProcess(delay) {
+            
             flashEffect.classList.remove('active');
             void flashEffect.offsetWidth; 
             flashEffect.classList.add('active');
-            setTimeout(() => { generateImagePreview(); }, delay);
+
+            setTimeout(async () => { 
+                await captureFrameToCanvas(); 
+                finishPreviewProcessing();
+            }, 500);
+
+            setTimeout(async () => { if (track) { try { await track.applyConstraints({ advanced: [{ torch: false }] }); } catch(e){} } }, 1500);
         }
 
-        function generateImagePreview() {
-            const vidW = video.videoWidth || 1080;
-            const vidH = video.videoHeight || 1440;
-            
-            // Kukunin ang saktong size ng box mo sa screen bago mag-crop
-            // para 100% "What You See Is What You Get"
-            const container = document.getElementById('cameraWrapper');
-            const targetRatio = container.clientWidth / container.clientHeight; 
-            
-            let drawWidth = vidW;
-            let drawHeight = vidW / targetRatio;
-            let startX = 0;
-            let startY = 0;
+        async function captureFrameToCanvas() {
+            return new Promise((resolve) => {
+                
+                const activeSource = isDigiCamMode ? dccLive : video;
+                
+                const vidW = activeSource.videoWidth || activeSource.naturalWidth || 1080;
+                const vidH = activeSource.videoHeight || activeSource.naturalHeight || 1440;
+                
+                const container = document.getElementById('cameraWrapper');
+                const targetRatio = container.clientWidth / container.clientHeight; 
+                
+                let drawWidth = vidW;
+                let drawHeight = vidW / targetRatio;
+                let startX = 0;
+                let startY = 0;
 
-            if (drawHeight > vidH) {
-                drawHeight = vidH;
-                drawWidth = vidH * targetRatio;
-                startX = (vidW - drawWidth) / 2;
-            } else {
-                startY = (vidH - drawHeight) / 2;
-            }
+                if (drawHeight > vidH) {
+                    drawHeight = vidH;
+                    drawWidth = vidH * targetRatio;
+                    startX = (vidW - drawWidth) / 2;
+                } else {
+                    startY = (vidH - drawHeight) / 2;
+                }
 
-            canvas.width = Math.max(1, Math.round(drawWidth));
-            canvas.height = Math.max(1, Math.round(drawHeight));
+                canvas.width = Math.max(1, Math.round(drawWidth));
+                canvas.height = Math.max(1, Math.round(drawHeight));
 
-            if (isNikonConnected || mobileFacingMode === 'user') {
-                ctx.translate(canvas.width, 0);
-                ctx.scale(-1, 1);
-            }
-            
-            ctx.drawImage(video, startX, startY, drawWidth, drawHeight, 0, 0, canvas.width, canvas.height);
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
+                if (isDigiCamMode || isNikonConnected || mobileFacingMode === 'user') {
+                    ctx.translate(canvas.width, 0);
+                    ctx.scale(-1, 1);
+                }
+                
+                ctx.drawImage(activeSource, startX, startY, drawWidth, drawHeight, 0, 0, canvas.width, canvas.height);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-            if (uploadedFrameData) {
-                const img = new Image();
-                img.onload = () => {
-                    let fw = canvas.width * (frameWidth / 100);
-                    let fh = canvas.height * (frameHeight / 100);
-                    let fx = canvas.width * (frameLeft / 100);
-                    let fy = canvas.height * (frameTop / 100);
-                    
-                    ctx.drawImage(img, fx, fy, fw, fh);
-                    finishPreviewProcessing();
-                };
-                img.onerror = finishPreviewProcessing; 
-                img.src = uploadedFrameData;
-            } else {
-                finishPreviewProcessing();
-            }
+                if (uploadedFrameData) {
+                    const img = new Image();
+                    img.onload = () => {
+                        let fw = canvas.width * (frameWidth / 100);
+                        let fh = canvas.height * (frameHeight / 100);
+                        let fx = canvas.width * (frameLeft / 100);
+                        let fy = canvas.height * (frameTop / 100);
+                        
+                        ctx.drawImage(img, fx, fy, fw, fh);
+                        resolve();
+                    };
+                    img.onerror = resolve; 
+                    img.src = uploadedFrameData;
+                } else {
+                    resolve();
+                }
+            });
         }
 
         function finishPreviewProcessing() {
@@ -1070,7 +1186,6 @@
             randomCompliment.innerText = compliments[Math.floor(Math.random() * compliments.length)];
             randomCompliment.style.display = 'inline-block';
             
-            // Ipapababa natin yung Fullscreen overlay bago lumipat ng screen
             exitFullScreen();
 
             showScreen('previewScreen');
@@ -1082,6 +1197,10 @@
             finalDataURL = null;
             randomCompliment.style.display = 'none'; 
             showScreen('boothScreen');
+            
+            if (isDigiCamMode) {
+                dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
+            }
         }
 
         // ==========================================
