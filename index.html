@@ -1005,6 +1005,21 @@
             startCameraStream();
         }
 
+        function retakePhoto() {
+            finalDataURL = null;
+            randomCompliment.style.display = 'none';
+            showScreen('boothScreen');
+            
+            // I-enable ulit ang mga buttons pagbalik
+            captureBtn.disabled = false;
+            fsCaptureBtn.disabled = false;
+            document.getElementById('cameraStatus').innerText = "READY TO SHOOT";
+
+            if (isDigiCamMode) {
+                dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
+            }
+        }
+
         // -----------------------------------------
         // PERFECT CAPTURE LOGIC WITH NODE.JS
         // -----------------------------------------
@@ -1012,7 +1027,7 @@
             captureBtn.disabled = true;
             fsCaptureBtn.disabled = true;
             
-            let timeLeft = 7; 
+            let timeLeft = 3; // Timer: 3 seconds
             countdownEl.style.display = 'block';
             countdownEl.innerText = timeLeft;
 
@@ -1024,23 +1039,25 @@
                 } else {
                     clearInterval(timerInterval);
                     countdownEl.style.display = 'none';
-
-                    // 1. SCREEN FLASH EFFECT
-                    flashEffect.classList.remove('active');
-                    void flashEffect.offsetWidth; 
-                    flashEffect.classList.add('active');
-
                     document.getElementById('cameraStatus').innerText = "📸 CAPTURING... PLEASE WAIT";
 
-                    // 2. TRIGGER HARDWARE & GRAB IMAGE
                     if (isNikonConnected && !isDigiCamMode) {
                         try {
-                            // Utusan ang Node.js na papitikin ang flash at i-save ang picture
-                            const response = await fetch('http://localhost:3000/trigger-camera', { method: 'POST' });
+                            // 1. Utusan muna agad ang Node.js para mauna ang mechanical shutter ng Nikon
+                            const triggerPromise = fetch('http://localhost:3000/trigger-camera', { method: 'POST' });
+
+                            // 2. Screen Flash na may konting delay (300ms) para sumabay sa totoong physical flash
+                            setTimeout(() => {
+                                flashEffect.classList.remove('active');
+                                void flashEffect.offsetWidth; 
+                                flashEffect.classList.add('active');
+                            }, 300);
+
+                            // 3. Hintayin ang picture galing sa server
+                            const response = await triggerPromise;
                             const data = await response.json();
 
                             if (data.success) {
-                                // Kunin ang High-Res Image at i-drawing sa canvas kasama ng frame
                                 await drawHighResImageToCanvas(data.photoUrl);
                                 finishPreviewProcessing();
                             } else {
@@ -1048,16 +1065,26 @@
                             }
                         } catch (error) {
                             console.error("Node server error:", error);
+                            // Fallback sa webcam kapag may error sa connection
+                            flashEffect.classList.remove('active');
+                            void flashEffect.offsetWidth; 
+                            flashEffect.classList.add('active');
                             alert("Node server not detected! Capturing from webcam instead.");
                             await captureFrameToCanvas(); 
                             finishPreviewProcessing();
                         }
                     } else if (isDigiCamMode) {
                         fetch('http://127.0.0.1:5514/?slc=capture', { mode: 'no-cors' }).catch(e=>e);
+                        flashEffect.classList.remove('active');
+                        void flashEffect.offsetWidth; 
+                        flashEffect.classList.add('active');
                         await captureFrameToCanvas(); 
                         finishPreviewProcessing();
                     } else {
                         // Standard Webcam Capture
+                        flashEffect.classList.remove('active');
+                        void flashEffect.offsetWidth; 
+                        flashEffect.classList.add('active');
                         await captureFrameToCanvas();
                         finishPreviewProcessing();
                     }
