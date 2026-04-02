@@ -367,7 +367,7 @@
             <label>Camera Source:</label>
             <select id="adminCameraSource" onchange="startNewSession()" style="background:#111; color:#fff; border-color: var(--primary-color);">
                 <option value="webcam">Webcam / Capture Card / Mobile</option>
-                <option value="digicam">DigiCamControl (Port 5514 / USB)</option>
+                <option value="nikon">Nikon (Node.js)</option>
             </select>
         </div>
 
@@ -1021,70 +1021,73 @@
         }
 
         // -----------------------------------------
-        // PERFECT CAPTURE LOGIC WITH NODE.JS
+        // PERFECT CAPTURE LOGIC WITH PRE-TRIGGER (DAYA/CHEAT DELAY)
         // -----------------------------------------
         async function triggerCaptureSequence() {
             captureBtn.disabled = true;
             fsCaptureBtn.disabled = true;
             
-            let timeLeft = 3; // Timer: 3 seconds
+            let timeLeft = 4; // TIMER: GINAWA NATING 4 SECONDS PARA MASAKOP YUNG 4-SEC DELAY NG CAMERA
             countdownEl.style.display = 'block';
             countdownEl.innerText = timeLeft;
 
+            let photoPromise = null;
+
+            // [ANG DAYA]: UTUSAN AGAD ANG NODE.JS PAGKAPINDOT PA LANG NG BUTTON!
+            // Para yung 4 seconds na delay ng camera, mangyayari HANGGANG nag-co-countdown ang screen.
+            if (document.getElementById('adminCameraSource').value === 'nikon') {
+                document.getElementById('cameraStatus').innerText = "📸 WARMING UP LENS...";
+                photoPromise = fetch('http://localhost:3000/trigger-camera', { method: 'POST' })
+                                .then(res => {
+                                    if (!res.ok) throw new Error("Server error");
+                                    return res.json();
+                                });
+            } else if (isDigiCamMode) {
+                fetch('http://127.0.0.1:5514/?slc=capture', { mode: 'no-cors' }).catch(e=>e);
+            }
+
+            // SIMULAN ANG VISUAL COUNTDOWN NA 4 SECONDS
             const timerInterval = setInterval(async () => {
                 timeLeft--;
 
                 if (timeLeft > 0) {
                     countdownEl.innerText = timeLeft;
                 } else {
+                    // ZERO NA! I-stop ang timer
                     clearInterval(timerInterval);
                     countdownEl.style.display = 'none';
-                    document.getElementById('cameraStatus').innerText = "📸 CAPTURING... PLEASE WAIT";
 
-                    if (isNikonConnected && !isDigiCamMode) {
+                    // 1. SCREEN FLASH EFFECT SAKTONG PAG-ZERO
+                    flashEffect.classList.remove('active');
+                    void flashEffect.offsetWidth; 
+                    flashEffect.classList.add('active');
+
+                    document.getElementById('cameraStatus').innerText = "📸 DOWNLOADING PHOTO...";
+
+                    // 2. KUNIN YUNG PICTURE GALING SA NIKON (Dapat tapos na siya pumitik ngayon!)
+                    if (document.getElementById('adminCameraSource').value === 'nikon') {
                         try {
-                            // 1. Utusan muna agad ang Node.js para mauna ang mechanical shutter ng Nikon
-                            const triggerPromise = fetch('http://localhost:3000/trigger-camera', { method: 'POST' });
-
-                            // 2. Screen Flash na may konting delay (300ms) para sumabay sa totoong physical flash
-                            setTimeout(() => {
-                                flashEffect.classList.remove('active');
-                                void flashEffect.offsetWidth; 
-                                flashEffect.classList.add('active');
-                            }, 300);
-
-                            // 3. Hintayin ang picture galing sa server
-                            const response = await triggerPromise;
-                            const data = await response.json();
-
-                            if (data.success) {
+                            const data = await photoPromise; // Hintayin matapos ang pagpasa ng picture
+                            
+                            if (data && data.success) {
                                 await drawHighResImageToCanvas(data.photoUrl);
                                 finishPreviewProcessing();
                             } else {
-                                throw new Error("Node trigger failed");
+                                throw new Error("Trigger failed");
                             }
                         } catch (error) {
-                            console.error("Node server error:", error);
-                            // Fallback sa webcam kapag may error sa connection
+                            console.error(error);
+                            // Tatanggalin ang flash effect
                             flashEffect.classList.remove('active');
                             void flashEffect.offsetWidth; 
                             flashEffect.classList.add('active');
-                            alert("Node server not detected! Capturing from webcam instead.");
+                            
+                            alert("Hindi ma-contact ang Node server o masyadong matagal! Capturing from webcam instead.");
                             await captureFrameToCanvas(); 
                             finishPreviewProcessing();
                         }
-                    } else if (isDigiCamMode) {
-                        fetch('http://127.0.0.1:5514/?slc=capture', { mode: 'no-cors' }).catch(e=>e);
-                        flashEffect.classList.remove('active');
-                        void flashEffect.offsetWidth; 
-                        flashEffect.classList.add('active');
-                        await captureFrameToCanvas(); 
-                        finishPreviewProcessing();
                     } else {
-                        // Standard Webcam Capture
-                        flashEffect.classList.remove('active');
-                        void flashEffect.offsetWidth; 
-                        flashEffect.classList.add('active');
+                        // KUNG WEBCAM ANG GAMIT
                         await captureFrameToCanvas();
                         finishPreviewProcessing();
                     }
