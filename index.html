@@ -133,8 +133,9 @@
         .booth-container { display: flex; align-items: center; gap: 40px; width: 100%; max-width: 1200px; padding: 20px; justify-content: center;}
         
         .view-box { position: relative; height: 60vh; width: auto; max-width: 100%; aspect-ratio: var(--cam-ratio); background: #000; border: 4px solid var(--primary-color); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; transition: all 0.3s ease; flex-shrink: 0; margin: 0 auto; }
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        video.no-mirror { transform: scaleX(1); } 
+        
+        /* TINANGGAL ANG AUTOMATIC CSS FLIP PARA SA MANUAL CONTROL */
+        video { width: 100%; height: 100%; object-fit: cover; }
 
         #frameOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;}
         #frameImage { position: absolute; top: 0%; left: 0%; width: 100%; height: 100%; object-fit: fill; pointer-events: auto; cursor: grab; display: none; }
@@ -267,7 +268,7 @@
         .admin-group { display: flex; flex-direction: column; gap: 5px; }
         .admin-group label { font-size: 0.8rem; color: #aaa; }
         .admin-group input, .admin-group select { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1rem; font-weight: bold; outline: none;}
-        .admin-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; }
+        .admin-overlay { fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; }
 
         /* -----------------------------------------
            NEW BOOKING INFO (RESULT SCREEN ONLY)
@@ -501,6 +502,8 @@
                 
                 <button id="fullscreenBtn" class="btn-pill" style="width: 100%; background: #fff; color: #000; border-color: #ccc; border-width: 5px; margin-top: 10px; font-size: 1rem;" onclick="goFullScreen()">🔲 FULL SCREEN</button>
 
+                <button id="toggleMirrorBtn" class="btn-pill" style="width: 100%; background: transparent; color: var(--text-main); border: 3px solid #555; margin-top: 10px; font-size: 0.9rem; padding: 12px;" onclick="toggleMirror()">🪞 Toggle Mirror</button>
+
                 <button id="flipCamBtn" class="btn-pill" style="width: 100%; background: transparent; color: var(--text-main); border: 3px solid #555; margin-top: 10px; font-size: 0.9rem; padding: 12px; display: none;" onclick="flipCamera()">🔄 Flip Camera</button>
                 
                 <div id="frameControls" style="display: none; flex-direction: column; gap: 5px; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
@@ -517,7 +520,7 @@
 
             <div class="view-box" id="cameraWrapper">
                 <video id="video" autoplay playsinline></video>
-                <img id="dccLive" src="" crossorigin="anonymous" style="display:none; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);">
+                <img id="dccLive" src="" crossorigin="anonymous" style="display:none; width: 100%; height: 100%; object-fit: cover;">
                 
                 <div id="frameOverlay">
                     <img id="frameImage" src="" draggable="false">
@@ -618,7 +621,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const storage = firebase.storage();
-        const db = firebase.database(); // NEW: Para sa Remote Control
+        const db = firebase.database(); 
 
         // ==========================================
         // SYSTEM VARIABLES
@@ -650,7 +653,7 @@
         
         let isNikonConnected = false;
         let isDigiCamMode = false;
-        let lastUsedDeviceId = null; // NEW: Para hindi lumipat-lipat ng camera
+        let lastUsedDeviceId = null; 
         
         let mobileFacingMode = 'environment';
         let currentStream = null;
@@ -661,25 +664,47 @@
         let isDragging = false;
         let dragStartX, dragStartY, initialLeft, initialTop;
 
+        // NEW: STATE FOR MANUAL MIRROR TOGGLE
+        let isMirrored = true;
+
         // -----------------------------------------
-        // REMOTE CONTROL LISTENER (MOBILE COMMANDS)
+        // REMOTE CONTROL LISTENER (BINALIK ANG FULL CODE PARA GUMANA LAHAT)
         // -----------------------------------------
         db.ref('booth_command').on('value', (snapshot) => {
             const data = snapshot.val();
             if(!data) return;
 
-            // 5-second window para maiwasan ang "ghost clicks" mula sa lumang data
+            // 5-second window para maiwasan ang "ghost clicks"
             if (Date.now() - data.time < 5000) {
-                if (data.action === "CAPTURE" && !captureBtn.disabled && document.getElementById('boothScreen').classList.contains('active')) {
+                const action = data.action;
+                
+                // Track active screens para hindi magulo ang system
+                const scrSetup = document.getElementById('setupScreen').classList.contains('active');
+                const scrBooth = document.getElementById('boothScreen').classList.contains('active');
+                const scrPreview = document.getElementById('previewScreen').classList.contains('active');
+                const scrResult = document.getElementById('resultScreen').classList.contains('active');
+
+                // Dito nangyayari ang buong magic ng "LOOKS GOOD" at "TAKE ANOTHER"
+                if (action === "CAPTURE" && scrBooth && !captureBtn.disabled) {
                     triggerCaptureSequence();
-                } else if (data.action === "RETAKE" && document.getElementById('previewScreen').classList.contains('active')) {
+                } else if (action === "RETAKE" && scrPreview) {
                     retakePhoto();
-                } else if (data.action === "PRINT_4X6" && document.getElementById('resultScreen').classList.contains('active')) {
-                    printPhoto('4x6');
-                } else if (data.action === "PRINT_5X7" && document.getElementById('resultScreen').classList.contains('active')) {
-                    printPhoto('5x7');
-                } else if (data.action === "NEW_SESSION" && document.getElementById('resultScreen').classList.contains('active')) {
+                } else if (action === "LOOKS_GOOD" && scrPreview) {
+                    showScreen('resultScreen');
+                } else if (action === "TAKE_ANOTHER" && scrResult) {
+                    takeAnotherPhoto();
+                } else if (action === "NEW_SESSION") {
                     startNewSession();
+                } else if (action === "PRINT_4X6" && scrResult) {
+                    printPhoto('4x6');
+                } else if (action === "PRINT_5X7" && scrResult) {
+                    printPhoto('5x7');
+                } else if (action === "DOWNLOAD_JPG" && scrResult) {
+                    downloadJPG();
+                } else if (action === "EXPORT_PDF" && scrResult) {
+                    exportPDF();
+                } else if (action === "SHOW_QR" && scrResult) {
+                    generateQR();
                 }
             }
         });
@@ -758,16 +783,12 @@
         }
 
         function startNewSession() {
-            // Anti-memory leak: i-clear ang preview cache pagkatapos ng session
             finalDataURL = null;
             previewImage.src = ""; 
             uploadedFrameData = null; 
             
             document.getElementById('proceedBtn').style.display = 'none';
             randomCompliment.style.display = 'none'; 
-            
-            // Hindi na kailangan patayin ang webcam stream para hindi na umikot sa paghanap ng bagong camera pag-restart
-            
             document.getElementById('cameraStatus').innerText = "INITIALIZING...";
             
             captureBtn.disabled = true;
@@ -783,7 +804,7 @@
             randomCompliment.style.display = 'none';
             showScreen('boothScreen');
             if (isDigiCamMode) {
-                dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
+                document.getElementById('dccLive').src = "http://127.0.0.1:5514/live?" + new Date().getTime();
             }
         }
 
@@ -940,8 +961,17 @@
         document.addEventListener('touchend', dragEnd);
 
         // -----------------------------------------
-        // HYPE SCREEN & CAMERA SETUP
+        // TOGGLE MIRROR & CAMERA SETUP
         // -----------------------------------------
+        function toggleMirror() {
+            isMirrored = !isMirrored;
+            const flipVal = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+            
+            // I-apply sa parehong video at digicam live view
+            video.style.transform = flipVal;
+            document.getElementById('dccLive').style.transform = flipVal;
+        }
+
         function triggerReadyScreen() {
             showScreen('readyScreen');
             setTimeout(goToBooth, 1800); 
@@ -1000,36 +1030,39 @@
         async function startCameraStream() {
             const camSource = document.getElementById('adminCameraSource').value;
             
-            // Kapag galing restart, iwasang patayin ang current stream kung Node/Webcam naman para hindi siya maghanap ulit ng random camera
             if (!currentStream) { 
                 if(camSource === 'digicam') {
                     isDigiCamMode = true;
                     isNikonConnected = true; 
                     video.style.display = 'none';
-                    dccLive.style.display = 'block';
+                    document.getElementById('dccLive').style.display = 'block';
                     document.getElementById('cameraStatus').innerText = "CONNECTING TO DIGICAM...";
                     document.getElementById('cameraStatus').style.color = "var(--primary-color)";
                     document.getElementById('flipCamBtn').style.display = 'none';
                     
-                    dccLive.onload = () => {
+                    document.getElementById('dccLive').onload = () => {
                         document.getElementById('cameraStatus').innerText = "PRO MODE // DIGICAM 5514";
                         document.getElementById('cameraStatus').style.color = "var(--primary-color)";
                         captureBtn.disabled = false;
                         fsCaptureBtn.disabled = false;
                     };
 
-                    dccLive.onerror = () => {
+                    document.getElementById('dccLive').onerror = () => {
                         document.getElementById('cameraStatus').innerText = "DIGICAM ERROR! SERVER OFF?";
                         document.getElementById('cameraStatus').style.color = "red";
                     };
 
-                    dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
+                    document.getElementById('dccLive').src = "http://127.0.0.1:5514/live?" + new Date().getTime();
+                    
+                    // Siguraduhing nasusunod ang Manual Mirror natin
+                    const flipVal = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+                    document.getElementById('dccLive').style.transform = flipVal;
                     return;
                 }
 
                 isDigiCamMode = false;
                 video.style.display = 'block';
-                dccLive.style.display = 'none';
+                document.getElementById('dccLive').style.display = 'none';
 
                 try {
                     const streamConfig = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -1039,17 +1072,16 @@
 
                     const videoDevices = devices.filter(d => d.kind === 'videoinput');
 
-                    // Basahin ang last used para hindi lumipat-lipat
                     if (lastUsedDeviceId && videoDevices.some(d => d.deviceId === lastUsedDeviceId)) {
                         selectedDeviceId = lastUsedDeviceId;
-                        isNikonConnected = true; // Preset na lang as true para hindi na maghanap
+                        isNikonConnected = true; 
                     } else {
                         for (let device of videoDevices) {
                             const label = device.label.toLowerCase();
                             if (label.includes('usb') || label.includes('nikon') || label.includes('capture')) {
                                 selectedDeviceId = device.deviceId;
                                 isNikonConnected = true;
-                                lastUsedDeviceId = device.deviceId; // Memory Lock
+                                lastUsedDeviceId = device.deviceId; 
                                 break;
                             }
                         }
@@ -1058,18 +1090,19 @@
                     let constraints = {};
                     if (isNikonConnected && selectedDeviceId) {
                         document.getElementById('flipCamBtn').style.display = 'none';
-                        video.classList.remove('no-mirror');
                         constraints = { video: { deviceId: { exact: selectedDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
                     } else {
                         document.getElementById('flipCamBtn').style.display = 'block';
-                        if (mobileFacingMode === 'environment') video.classList.add('no-mirror');
-                        else video.classList.remove('no-mirror');
                         constraints = { video: { facingMode: mobileFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } } };
                     }
                     
                     document.getElementById('cameraStatus').style.color = "var(--primary-color)";
                     currentStream = await navigator.mediaDevices.getUserMedia(constraints);
                     video.srcObject = currentStream;
+
+                    // Siguraduhing nasusunod ang Manual Mirror natin
+                    const flipVal = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+                    video.style.transform = flipVal;
                     
                 } catch (err) { 
                     alert("Camera access required or no camera found."); 
@@ -1077,7 +1110,6 @@
                     document.getElementById('cameraStatus').style.color = "red";
                 }
             } else {
-                // Kung buhay pa ang stream (galing restart), tuloy lang para walang delay at hindi mag-switch
                 captureBtn.disabled = false;
                 fsCaptureBtn.disabled = false;
                 document.getElementById('cameraStatus').innerText = "READY TO SHOOT";
@@ -1090,7 +1122,6 @@
             document.getElementById('cameraStatus').innerText = "FLIPPING...";
             mobileFacingMode = mobileFacingMode === 'user' ? 'environment' : 'user';
             
-            // Force stream reset for flip
             if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
             startCameraStream();
         }
@@ -1101,13 +1132,12 @@
             randomCompliment.style.display = 'none';
             showScreen('boothScreen');
             
-            // I-enable ulit ang mga buttons pagbalik
             captureBtn.disabled = false;
             fsCaptureBtn.disabled = false;
             document.getElementById('cameraStatus').innerText = "READY TO SHOOT";
 
             if (isDigiCamMode) {
-                dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
+                document.getElementById('dccLive').src = "http://127.0.0.1:5514/live?" + new Date().getTime();
             }
         }
 
@@ -1118,17 +1148,15 @@
             captureBtn.disabled = true;
             fsCaptureBtn.disabled = true;
             
-            let timeLeft = 4; // TIMER: GINAWA NATING 4 SECONDS PARA MASAKOP YUNG 4-SEC DELAY NG CAMERA
+            let timeLeft = 4; // 4 SECONDS DELAY
             countdownEl.style.display = 'block';
             countdownEl.innerText = timeLeft;
 
             let photoPromise = null;
             
-            // Gagamit tayo ng AbortController para hindi mag-stuck ang system pag di nag-respond ang Node.js
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds bago mag-give up
+            const timeoutId = setTimeout(() => controller.abort(), 12000); 
 
-            // [ANG DAYA]: UTUSAN AGAD ANG NODE.JS PAGKAPINDOT PA LANG NG BUTTON!
             if (document.getElementById('adminCameraSource').value === 'nikon') {
                 document.getElementById('cameraStatus').innerText = "📸 WARMING UP LENS...";
                 photoPromise = fetch('http://localhost:3000/trigger-camera', { method: 'POST', signal: controller.signal })
@@ -1145,25 +1173,21 @@
                 fetch('http://127.0.0.1:5514/?slc=capture', { mode: 'no-cors' }).catch(e=>e);
             }
 
-            // SIMULAN ANG VISUAL COUNTDOWN NA 4 SECONDS
             const timerInterval = setInterval(async () => {
                 timeLeft--;
 
                 if (timeLeft > 0) {
                     countdownEl.innerText = timeLeft;
                 } else {
-                    // ZERO NA! I-stop ang timer
                     clearInterval(timerInterval);
                     countdownEl.style.display = 'none';
 
-                    // 1. SCREEN FLASH EFFECT SAKTONG PAG-ZERO
                     flashEffect.classList.remove('active');
                     void flashEffect.offsetWidth; 
                     flashEffect.classList.add('active');
 
                     document.getElementById('cameraStatus').innerText = "📸 DOWNLOADING PHOTO...";
 
-                    // 2. KUNIN YUNG PICTURE GALING SA NIKON
                     if (document.getElementById('adminCameraSource').value === 'nikon') {
                         try {
                             const data = await photoPromise; 
@@ -1185,7 +1209,6 @@
                             finishPreviewProcessing();
                         }
                     } else {
-                        // KUNG WEBCAM ANG GAMIT
                         await captureFrameToCanvas();
                         finishPreviewProcessing();
                     }
@@ -1196,12 +1219,11 @@
         captureBtn.addEventListener('click', triggerCaptureSequence);
         fsCaptureBtn.addEventListener('click', triggerCaptureSequence);
 
-        // Ito ang maglo-load ng malinaw na picture galing sa Node.js mo papunta sa Photobooth format
         async function drawHighResImageToCanvas(photoUrl) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
-                img.crossOrigin = "Anonymous"; // Kailangan para hindi mag-error sa export
-                img.src = photoUrl + '?t=' + new Date().getTime(); // Anti-cache
+                img.crossOrigin = "Anonymous"; 
+                img.src = photoUrl + '?t=' + new Date().getTime(); 
 
                 img.onload = () => {
                     const container = document.getElementById('cameraWrapper');
@@ -1222,20 +1244,18 @@
 
                     canvas.width = Math.max(1, Math.round(drawWidth));
                     canvas.height = Math.max(1, Math.round(drawHeight));
-                     // 👇👇👇 DITO BANDA INAYOS YUNG MIRROR FLIP SAKTONG KUNG ANO YUNG NASA PREVIEW 👇👇👇
-                    ctx.translate(canvas.width, 0);
-                    ctx.scale(-1, 1);
                     
-                    // I-drawing ang Nikon Picture na naka-mirror
+                    // DEPENDS ON THE TOGGLE MIRROR SETTING
+                    if (isMirrored) {
+                        ctx.translate(canvas.width, 0);
+                        ctx.scale(-1, 1);
+                    }
+                    
                     ctx.drawImage(img, startX, startY, drawWidth, drawHeight, 0, 0, canvas.width, canvas.height);
                     
-                    // I-reset ang canvas pabalik sa normal BAGO i-drawing ang frame para hindi bumaligtad ang text/logo mo
+                    // Reset matrix before drawing the frame (PNG overlay)
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
-                    // 👆👆👆 HANGGANG DITO YUNG INAYOS PARA SA MIRROR FIX 👆👆👆
-                    
-                    ctx.drawImage(img, startX, startY, drawWidth, drawHeight, 0, 0, canvas.width, canvas.height);
 
-                    // I-drawing ang Frame sa ibabaw
                     if (uploadedFrameData) {
                         const overlayImg = new Image();
                         overlayImg.onload = () => {
@@ -1244,13 +1264,13 @@
                             let fx = canvas.width * (frameLeft / 100);
                             let fy = canvas.height * (frameTop / 100);
                             ctx.drawImage(overlayImg, fx, fy, fw, fh);
-                            URL.revokeObjectURL(img.src); // Memory Cleanup Fix
+                            URL.revokeObjectURL(img.src); 
                             resolve();
                         };
                         overlayImg.onerror = resolve; 
                         overlayImg.src = uploadedFrameData;
                     } else {
-                        URL.revokeObjectURL(img.src); // Memory Cleanup Fix
+                        URL.revokeObjectURL(img.src); 
                         resolve();
                     }
                 };
@@ -1258,10 +1278,9 @@
             });
         }
 
-        // Ito ang lumang code mo para sa fallback (Capture card / Webcam)
         async function captureFrameToCanvas() {
             return new Promise((resolve) => {
-                const activeSource = isDigiCamMode ? dccLive : video;
+                const activeSource = isDigiCamMode ? document.getElementById('dccLive') : video;
                 const vidW = activeSource.videoWidth || activeSource.naturalWidth || 1080;
                 const vidH = activeSource.videoHeight || activeSource.naturalHeight || 1440;
                 
@@ -1284,7 +1303,8 @@
                 canvas.width = Math.max(1, Math.round(drawWidth));
                 canvas.height = Math.max(1, Math.round(drawHeight));
 
-                if (isDigiCamMode || isNikonConnected || mobileFacingMode === 'user') {
+                // DEPENDS ON THE TOGGLE MIRROR SETTING
+                if (isMirrored) {
                     ctx.translate(canvas.width, 0);
                     ctx.scale(-1, 1);
                 }
@@ -1409,7 +1429,6 @@
             const style = document.createElement('style');
             style.id = 'print-size-style';
             
-            // EXACT FIT: Tinatanggal lahat ng borders at padding para sa mismong photo printer sizes
             if (size === '4x6') {
                 style.innerHTML = `@media print { @page { size: 4in 6in; margin: 0 !important; } }`;
             } else if (size === '5x7') {
