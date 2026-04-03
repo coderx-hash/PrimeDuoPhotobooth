@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js"></script>
 
     <style>
@@ -344,6 +345,36 @@
             .contact-grid .row { flex-direction: column; align-items: flex-start; gap: 3px; }
             .result-booking { padding: 15px; }
         }
+
+        /* -----------------------------------------
+           PRINTING STYLES (HIDDEN FROM UI) - NO MARGINS/SPACES
+        ------------------------------------------ */
+        @media print {
+            @page { margin: 0 !important; }
+            body { margin: 0 !important; padding: 0 !important; background: #fff; }
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                padding: 0;
+                display: block;
+                background: white;
+            }
+            #imageToPrint {
+                width: 100vw;
+                height: 100vh;
+                object-fit: cover; /* Ensures no white spaces, fills the paper perfectly */
+                display: block;
+                margin: 0;
+                padding: 0;
+            }
+        }
+        #printArea { display: none; }
     </style>
 </head>
 <body class="theme-default">
@@ -396,7 +427,7 @@
     </div>
 
     <div class="footer-brand">
-        POWERED BY YUKI APPAREL PH // SYSTEM V7.5
+        Prime Duo Photobooth // SYSTEM V7.5
     </div>
 
     <div id="introScreen" class="screen active">
@@ -410,7 +441,7 @@
                 
                 <div class="detail-item">
                     <span>FB</span>
-                    <div>@YukiApparelPh</div>
+                    <div>PrimeDuophotobooth</div>
                 </div>
                 <div class="detail-item">
                     <span>TikTok</span>
@@ -522,6 +553,11 @@
         <p style="opacity: 0.8; margin-bottom: 20px; font-size: 1rem; text-align: center;">How would you like to save your photo?</p>
         
         <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 350px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="btn-pill" style="background: #3498db; border-color: #2980b9; color: white; padding: 15px 10px; font-size: 1rem;" onclick="printPhoto('4x6')">🖨️ 4x6</button>
+                <button class="btn-pill" style="background: #3498db; border-color: #2980b9; color: white; padding: 15px 10px; font-size: 1rem;" onclick="printPhoto('5x7')">🖨️ 5x7</button>
+            </div>
+
             <button class="btn-pill" style="border-width: 5px;" onclick="downloadJPG()">📥 Save as JPG</button>
             <button class="btn-pill" style="background: #e74c3c; border-color: #c0392b; color: white; border-width: 5px;" onclick="exportPDF()">📄 Export to PDF</button>
             <button class="btn-pill" style="background: #27ae60; border-color: #1e8449; color: white; border-width: 5px;" onclick="generateQR()">📱 Show QR Code</button>
@@ -535,20 +571,24 @@
             <div class="contact-grid">
                 <div class="row">
                     <span class="label">FB</span>
-                    <span class="val">@YukiApparelPh</span>
+                    <span class="val">primeduophotobooth</span>
                 </div>
                 <div class="row">
                     <span class="label">TikTok</span>
-                    <span class="val">@YukiApparelPh</span>
+                    <span class="val">primeduophotoboothh</span>
                 </div>
                 <div class="row">
                     <span class="label">Email</span>
-                    <span class="val">inquire@yukiapparel.ph</span>
+                    <span class="val">primeduophotobooth@gmail.com</span>
                 </div>
             </div>
         </div>
 
         <button style="background:transparent; border:none; color:var(--text-main); font-weight:bold; cursor:pointer; text-decoration:underline; font-size:1.1rem; margin-top: 25px; margin-bottom: 40px;" onclick="startNewSession()">🔄 New Session (Restart)</button>
+
+        <div id="printArea">
+            <img id="imageToPrint" src="">
+        </div>
     </div>
 
     <div class="qr-modal" id="qrModal">
@@ -570,6 +610,7 @@
             apiKey: "AIzaSyDWwUzJUqYyoIpKdf1MH3mRmoTX9JKlJuE",
             authDomain: "qrcode-2e20e.firebaseapp.com",
             projectId: "qrcode-2e20e",
+            databaseURL: "https://qrcode-2e20e-default-rtdb.firebaseio.com",
             storageBucket: "qrcode-2e20e.firebasestorage.app",
             messagingSenderId: "931181134675",
             appId: "1:931181134675:web:9657787b6ab0b1811857a6",
@@ -577,6 +618,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const storage = firebase.storage();
+        const db = firebase.database(); // NEW: Para sa Remote Control
 
         // ==========================================
         // SYSTEM VARIABLES
@@ -608,6 +650,7 @@
         
         let isNikonConnected = false;
         let isDigiCamMode = false;
+        let lastUsedDeviceId = null; // NEW: Para hindi lumipat-lipat ng camera
         
         let mobileFacingMode = 'environment';
         let currentStream = null;
@@ -617,6 +660,29 @@
         let frameLeft = 0, frameTop = 0, frameWidth = 100, frameHeight = 100;
         let isDragging = false;
         let dragStartX, dragStartY, initialLeft, initialTop;
+
+        // -----------------------------------------
+        // REMOTE CONTROL LISTENER (MOBILE COMMANDS)
+        // -----------------------------------------
+        db.ref('booth_command').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if(!data) return;
+
+            // 5-second window para maiwasan ang "ghost clicks" mula sa lumang data
+            if (Date.now() - data.time < 5000) {
+                if (data.action === "CAPTURE" && !captureBtn.disabled && document.getElementById('boothScreen').classList.contains('active')) {
+                    triggerCaptureSequence();
+                } else if (data.action === "RETAKE" && document.getElementById('previewScreen').classList.contains('active')) {
+                    retakePhoto();
+                } else if (data.action === "PRINT_4X6" && document.getElementById('resultScreen').classList.contains('active')) {
+                    printPhoto('4x6');
+                } else if (data.action === "PRINT_5X7" && document.getElementById('resultScreen').classList.contains('active')) {
+                    printPhoto('5x7');
+                } else if (data.action === "NEW_SESSION" && document.getElementById('resultScreen').classList.contains('active')) {
+                    startNewSession();
+                }
+            }
+        });
 
         // -----------------------------------------
         // FULLSCREEN LOGIC
@@ -692,11 +758,16 @@
         }
 
         function startNewSession() {
+            // Anti-memory leak: i-clear ang preview cache pagkatapos ng session
             finalDataURL = null;
+            previewImage.src = ""; 
             uploadedFrameData = null; 
+            
             document.getElementById('proceedBtn').style.display = 'none';
             randomCompliment.style.display = 'none'; 
-            if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
+            
+            // Hindi na kailangan patayin ang webcam stream para hindi na umikot sa paghanap ng bagong camera pag-restart
+            
             document.getElementById('cameraStatus').innerText = "INITIALIZING...";
             
             captureBtn.disabled = true;
@@ -708,6 +779,7 @@
 
         function takeAnotherPhoto() {
             finalDataURL = null;
+            previewImage.src = "";
             randomCompliment.style.display = 'none';
             showScreen('boothScreen');
             if (isDigiCamMode) {
@@ -928,72 +1000,87 @@
         async function startCameraStream() {
             const camSource = document.getElementById('adminCameraSource').value;
             
-            if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
-            
-            if(camSource === 'digicam') {
-                isDigiCamMode = true;
-                isNikonConnected = true; 
-                video.style.display = 'none';
-                dccLive.style.display = 'block';
-                document.getElementById('cameraStatus').innerText = "CONNECTING TO DIGICAM...";
-                document.getElementById('cameraStatus').style.color = "var(--primary-color)";
-                document.getElementById('flipCamBtn').style.display = 'none';
-                
-                dccLive.onload = () => {
-                    document.getElementById('cameraStatus').innerText = "PRO MODE // DIGICAM 5514";
+            // Kapag galing restart, iwasang patayin ang current stream kung Node/Webcam naman para hindi siya maghanap ulit ng random camera
+            if (!currentStream) { 
+                if(camSource === 'digicam') {
+                    isDigiCamMode = true;
+                    isNikonConnected = true; 
+                    video.style.display = 'none';
+                    dccLive.style.display = 'block';
+                    document.getElementById('cameraStatus').innerText = "CONNECTING TO DIGICAM...";
                     document.getElementById('cameraStatus').style.color = "var(--primary-color)";
-                    captureBtn.disabled = false;
-                    fsCaptureBtn.disabled = false;
-                };
-
-                dccLive.onerror = () => {
-                    document.getElementById('cameraStatus').innerText = "DIGICAM ERROR! SERVER OFF?";
-                    document.getElementById('cameraStatus').style.color = "red";
-                };
-
-                dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
-                return;
-            }
-
-            isDigiCamMode = false;
-            video.style.display = 'block';
-            dccLive.style.display = 'none';
-
-            try {
-                const streamConfig = await navigator.mediaDevices.getUserMedia({ video: true });
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                let selectedDeviceId = null;
-                isNikonConnected = false;
-
-                for (let device of devices.filter(d => d.kind === 'videoinput')) {
-                    const label = device.label.toLowerCase();
-                    if (label.includes('usb') || label.includes('nikon') || label.includes('capture')) {
-                        selectedDeviceId = device.deviceId;
-                        isNikonConnected = true;
-                        break;
-                    }
-                }
-
-                let constraints = {};
-                if (isNikonConnected) {
                     document.getElementById('flipCamBtn').style.display = 'none';
-                    video.classList.remove('no-mirror');
-                    constraints = { video: { deviceId: { exact: selectedDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
-                } else {
-                    document.getElementById('flipCamBtn').style.display = 'block';
-                    if (mobileFacingMode === 'environment') video.classList.add('no-mirror');
-                    else video.classList.remove('no-mirror');
-                    constraints = { video: { facingMode: mobileFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } } };
+                    
+                    dccLive.onload = () => {
+                        document.getElementById('cameraStatus').innerText = "PRO MODE // DIGICAM 5514";
+                        document.getElementById('cameraStatus').style.color = "var(--primary-color)";
+                        captureBtn.disabled = false;
+                        fsCaptureBtn.disabled = false;
+                    };
+
+                    dccLive.onerror = () => {
+                        document.getElementById('cameraStatus').innerText = "DIGICAM ERROR! SERVER OFF?";
+                        document.getElementById('cameraStatus').style.color = "red";
+                    };
+
+                    dccLive.src = "http://127.0.0.1:5514/live?" + new Date().getTime();
+                    return;
                 }
-                
-                document.getElementById('cameraStatus').style.color = "var(--primary-color)";
-                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = currentStream;
-                
-            } catch (err) { 
-                alert("Camera access required or no camera found."); 
-                document.getElementById('cameraStatus').innerText = "CAMERA BLOCKED / NOT FOUND!";
-                document.getElementById('cameraStatus').style.color = "red";
+
+                isDigiCamMode = false;
+                video.style.display = 'block';
+                dccLive.style.display = 'none';
+
+                try {
+                    const streamConfig = await navigator.mediaDevices.getUserMedia({ video: true });
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    let selectedDeviceId = null;
+                    isNikonConnected = false;
+
+                    const videoDevices = devices.filter(d => d.kind === 'videoinput');
+
+                    // Basahin ang last used para hindi lumipat-lipat
+                    if (lastUsedDeviceId && videoDevices.some(d => d.deviceId === lastUsedDeviceId)) {
+                        selectedDeviceId = lastUsedDeviceId;
+                        isNikonConnected = true; // Preset na lang as true para hindi na maghanap
+                    } else {
+                        for (let device of videoDevices) {
+                            const label = device.label.toLowerCase();
+                            if (label.includes('usb') || label.includes('nikon') || label.includes('capture')) {
+                                selectedDeviceId = device.deviceId;
+                                isNikonConnected = true;
+                                lastUsedDeviceId = device.deviceId; // Memory Lock
+                                break;
+                            }
+                        }
+                    }
+
+                    let constraints = {};
+                    if (isNikonConnected && selectedDeviceId) {
+                        document.getElementById('flipCamBtn').style.display = 'none';
+                        video.classList.remove('no-mirror');
+                        constraints = { video: { deviceId: { exact: selectedDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
+                    } else {
+                        document.getElementById('flipCamBtn').style.display = 'block';
+                        if (mobileFacingMode === 'environment') video.classList.add('no-mirror');
+                        else video.classList.remove('no-mirror');
+                        constraints = { video: { facingMode: mobileFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } } };
+                    }
+                    
+                    document.getElementById('cameraStatus').style.color = "var(--primary-color)";
+                    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    video.srcObject = currentStream;
+                    
+                } catch (err) { 
+                    alert("Camera access required or no camera found."); 
+                    document.getElementById('cameraStatus').innerText = "CAMERA BLOCKED / NOT FOUND!";
+                    document.getElementById('cameraStatus').style.color = "red";
+                }
+            } else {
+                // Kung buhay pa ang stream (galing restart), tuloy lang para walang delay at hindi mag-switch
+                captureBtn.disabled = false;
+                fsCaptureBtn.disabled = false;
+                document.getElementById('cameraStatus').innerText = "READY TO SHOOT";
             }
         }
 
@@ -1002,11 +1089,15 @@
             fsCaptureBtn.disabled = true;
             document.getElementById('cameraStatus').innerText = "FLIPPING...";
             mobileFacingMode = mobileFacingMode === 'user' ? 'environment' : 'user';
+            
+            // Force stream reset for flip
+            if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
             startCameraStream();
         }
 
         function retakePhoto() {
             finalDataURL = null;
+            previewImage.src = "";
             randomCompliment.style.display = 'none';
             showScreen('boothScreen');
             
@@ -1021,7 +1112,7 @@
         }
 
         // -----------------------------------------
-        // PERFECT CAPTURE LOGIC WITH PRE-TRIGGER (DAYA/CHEAT DELAY)
+        // PERFECT CAPTURE LOGIC WITH PRE-TRIGGER & ANTI-STUCK TIMEOUT
         // -----------------------------------------
         async function triggerCaptureSequence() {
             captureBtn.disabled = true;
@@ -1032,14 +1123,23 @@
             countdownEl.innerText = timeLeft;
 
             let photoPromise = null;
+            
+            // Gagamit tayo ng AbortController para hindi mag-stuck ang system pag di nag-respond ang Node.js
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 seconds bago mag-give up
 
             // [ANG DAYA]: UTUSAN AGAD ANG NODE.JS PAGKAPINDOT PA LANG NG BUTTON!
             if (document.getElementById('adminCameraSource').value === 'nikon') {
                 document.getElementById('cameraStatus').innerText = "📸 WARMING UP LENS...";
-                photoPromise = fetch('http://localhost:3000/trigger-camera', { method: 'POST' })
+                photoPromise = fetch('http://localhost:3000/trigger-camera', { method: 'POST', signal: controller.signal })
                                 .then(res => {
+                                    clearTimeout(timeoutId);
                                     if (!res.ok) throw new Error("Server error");
                                     return res.json();
+                                })
+                                .catch(err => {
+                                    clearTimeout(timeoutId);
+                                    throw err;
                                 });
             } else if (isDigiCamMode) {
                 fetch('http://127.0.0.1:5514/?slc=capture', { mode: 'no-cors' }).catch(e=>e);
@@ -1080,7 +1180,7 @@
                             void flashEffect.offsetWidth; 
                             flashEffect.classList.add('active');
                             
-                            alert("Hindi ma-contact ang Node server o masyadong matagal! Capturing from webcam instead.");
+                            alert("Timeout! Hindi sumagot ang Node server sa loob ng 12 seconds. Kumukuha ng fallback sa webcam.");
                             await captureFrameToCanvas(); 
                             finishPreviewProcessing();
                         }
@@ -1122,9 +1222,7 @@
 
                     canvas.width = Math.max(1, Math.round(drawWidth));
                     canvas.height = Math.max(1, Math.round(drawHeight));
-
-                    // 👇👇👇 DITO BANDA INAYOS YUNG MIRROR FLIP SAKTONG KUNG ANO YUNG NASA PREVIEW 👇👇👇
-                    // I-flip muna ang canvas bago i-drawing ang High-Res picture para maging "mirror style"
+                     // 👇👇👇 DITO BANDA INAYOS YUNG MIRROR FLIP SAKTONG KUNG ANO YUNG NASA PREVIEW 👇👇👇
                     ctx.translate(canvas.width, 0);
                     ctx.scale(-1, 1);
                     
@@ -1134,8 +1232,10 @@
                     // I-reset ang canvas pabalik sa normal BAGO i-drawing ang frame para hindi bumaligtad ang text/logo mo
                     ctx.setTransform(1, 0, 0, 1, 0, 0);
                     // 👆👆👆 HANGGANG DITO YUNG INAYOS PARA SA MIRROR FIX 👆👆👆
+                    
+                    ctx.drawImage(img, startX, startY, drawWidth, drawHeight, 0, 0, canvas.width, canvas.height);
 
-                    // I-drawing ang Frame sa ibabaw (hindi ito mababaligtad dahil ni-reset natin sa taas)
+                    // I-drawing ang Frame sa ibabaw
                     if (uploadedFrameData) {
                         const overlayImg = new Image();
                         overlayImg.onload = () => {
@@ -1144,11 +1244,13 @@
                             let fx = canvas.width * (frameLeft / 100);
                             let fy = canvas.height * (frameTop / 100);
                             ctx.drawImage(overlayImg, fx, fy, fw, fh);
+                            URL.revokeObjectURL(img.src); // Memory Cleanup Fix
                             resolve();
                         };
                         overlayImg.onerror = resolve; 
                         overlayImg.src = uploadedFrameData;
                     } else {
+                        URL.revokeObjectURL(img.src); // Memory Cleanup Fix
                         resolve();
                     }
                 };
@@ -1293,6 +1395,37 @@
                 console.error("Firebase Upload Error:", error);
                 qrContainer.innerHTML = `<div style="color: red; font-weight: bold; text-align: center;">Upload Failed.<br>Check your Firebase Storage Rules.</div>`;
             }
+        }
+
+        // ==========================================
+        // AUTO PRINT FUNCTION (EXACT FIT, NO MARGINS)
+        // ==========================================
+        function printPhoto(size) {
+            if (!finalDataURL) return;
+
+            const printImg = document.getElementById('imageToPrint');
+            printImg.src = finalDataURL;
+
+            const style = document.createElement('style');
+            style.id = 'print-size-style';
+            
+            // EXACT FIT: Tinatanggal lahat ng borders at padding para sa mismong photo printer sizes
+            if (size === '4x6') {
+                style.innerHTML = `@media print { @page { size: 4in 6in; margin: 0 !important; } }`;
+            } else if (size === '5x7') {
+                style.innerHTML = `@media print { @page { size: 5in 7in; margin: 0 !important; } }`;
+            }
+            
+            document.head.appendChild(style);
+            document.getElementById('printArea').style.display = 'block';
+
+            setTimeout(() => {
+                window.print();
+                
+                document.getElementById('printArea').style.display = 'none';
+                const oldStyle = document.getElementById('print-size-style');
+                if (oldStyle) oldStyle.remove();
+            }, 500);
         }
     </script>
 </body>
