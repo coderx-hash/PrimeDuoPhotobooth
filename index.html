@@ -674,6 +674,9 @@
             const data = snapshot.val();
             if(!data) return;
 
+            // DITO NATIN IDADAGDAG ANG REPLY SA FIREBASE PARA SA REMOTE ACKNOWLEDGMENT:
+            db.ref('booth_ack').set({ time: data.time, status: 'received' }).catch(e => console.error(e));
+
             // 5-second window para maiwasan ang "ghost clicks"
             if (Date.now() - data.time < 5000) {
                 const action = data.action;
