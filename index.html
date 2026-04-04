@@ -142,7 +142,6 @@
 
         .countdown-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12rem; font-weight: 900; color: white; text-shadow: 0 10px 40px rgba(0,0,0,0.9); display: none; z-index: 15; pointer-events: none; }
         
-        /* IBINALIK ANG FLASH EFFECT DITO */
         .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; opacity: 0; z-index: 20; pointer-events: none; }
         .flash.active { animation: flashAnim 0.8s ease-out; }
         @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
@@ -527,7 +526,6 @@
                     <img id="frameImage" src="" draggable="false">
                 </div>
                 <div id="countdown" class="countdown-display"></div>
-                
                 <div id="flashEffect" class="flash"></div>
                 
                 <div class="fs-controls" id="fsControls">
@@ -637,7 +635,7 @@
         const captureBtn = document.getElementById('captureBtn');
         const fsCaptureBtn = document.getElementById('fsCaptureBtn');
         const countdownEl = document.getElementById('countdown');
-        const flashEffect = document.getElementById('flashEffect'); // IBINALIK
+        const flashEffect = document.getElementById('flashEffect');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const previewImage = document.getElementById('previewImage');
@@ -1140,7 +1138,7 @@
         }
 
         // -----------------------------------------
-        // PERFECT CAPTURE LOGIC WITH SMART FLASH & PRE-TRIGGER
+        // STRICT CAPTURE LOGIC (NO WEBCAM FALLBACK FOR NIKON)
         // -----------------------------------------
         async function triggerCaptureSequence() {
             captureBtn.disabled = true;
@@ -1208,10 +1206,15 @@
                                 throw new Error("Trigger failed");
                             }
                         } catch (error) {
-                            console.error(error);
-                            alert("Timeout o Error! Hindi sumagot ang Node server o camera. Kumukuha ng fallback sa webcam.");
-                            await captureFrameToCanvas(); 
-                            finishPreviewProcessing();
+                            console.error("Nikon Capture Error:", error);
+                            
+                            // TINANGGAL NA ANG FALLBACK. MAG-A-ALERT NA LANG KAPAG PUMALYA.
+                            alert("⚠️ Error sa DSLR: Walang na-capture. Paki-check kung naka-on ang camera, nakakabit ang USB, at naka-run ang Node server.");
+                            
+                            // I-reset ang buttons at status para makapag-try ulit
+                            captureBtn.disabled = false;
+                            fsCaptureBtn.disabled = false;
+                            document.getElementById('cameraStatus').innerText = "READY TO SHOOT";
                         }
                     } else if (isDigiCamMode) {
                         setTimeout(async () => {
